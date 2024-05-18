@@ -9,5 +9,5 @@ public class TransactionDto : IdContainer
     public CurrencyType CurrencyType { get; set; }
     public int Amount { get; set; }
     public DateTime time { get; set; }
-    //public AccountDto AccountTo { get; set; }
+    public bool Status { get; set; }
 }

@@ -94,6 +94,10 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("currency_type")
                         .HasColumnName("currency_type");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean")
+                        .HasColumnName("status");
+
                     b.Property<TransactionType>("TransactionType")
                         .HasColumnType("transaction_type")
                         .HasColumnName("transaction_type");

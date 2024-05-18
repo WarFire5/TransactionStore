@@ -23,7 +23,6 @@ public class TransactionStoreContext : DbContext
         modelBuilder
             .Entity<TransactionDto>()
             .HasOne(t => t.Account)
-            //.HasOne(t => t.AccountTo)
             .WithMany(l => l.Transactions);
 
         modelBuilder.HasPostgresEnum<CurrencyType>();

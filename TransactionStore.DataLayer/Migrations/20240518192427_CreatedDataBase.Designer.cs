@@ -13,8 +13,8 @@ using TransactionStore.DataLayer;
 namespace TransactionStore.DataLayer.Migrations
 {
     [DbContext(typeof(TransactionStoreContext))]
-    [Migration("20240518190214_Initial")]
-    partial class Initial
+    [Migration("20240518192427_CreatedDataBase")]
+    partial class CreatedDataBase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,6 +96,10 @@ namespace TransactionStore.DataLayer.Migrations
                     b.Property<CurrencyType>("CurrencyType")
                         .HasColumnType("currency_type")
                         .HasColumnName("currency_type");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean")
+                        .HasColumnName("status");
 
                     b.Property<TransactionType>("TransactionType")
                         .HasColumnType("transaction_type")

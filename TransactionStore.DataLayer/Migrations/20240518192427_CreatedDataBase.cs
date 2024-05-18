@@ -7,7 +7,7 @@ using TransactionStore.Core.Enums;
 namespace TransactionStore.DataLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class CreatedDataBase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,7 +58,8 @@ namespace TransactionStore.DataLayer.Migrations
                     transaction_type = table.Column<TransactionType>(type: "transaction_type", nullable: false),
                     currency_type = table.Column<CurrencyType>(type: "currency_type", nullable: false),
                     amount = table.Column<int>(type: "integer", nullable: false),
-                    time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    status = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
