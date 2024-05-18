@@ -37,10 +37,6 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("account_name");
 
-                    b.Property<int>("Balance")
-                        .HasColumnType("integer")
-                        .HasColumnName("balance");
-
                     b.Property<CurrencyType>("CurrencyType")
                         .HasColumnType("currency_type")
                         .HasColumnName("currency_type");
@@ -89,6 +85,10 @@ namespace TransactionStore.DataLayer.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("integer")
                         .HasColumnName("amount");
+
+                    b.Property<int>("CurrencyRate")
+                        .HasColumnType("integer")
+                        .HasColumnName("currency_rate");
 
                     b.Property<CurrencyType>("CurrencyType")
                         .HasColumnType("currency_type")
