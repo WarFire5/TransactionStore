@@ -65,6 +65,10 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean")
+                        .HasColumnName("status");
+
                     b.HasKey("Id")
                         .HasName("pk_leads");
 
@@ -85,10 +89,6 @@ namespace TransactionStore.DataLayer.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("integer")
                         .HasColumnName("amount");
-
-                    b.Property<int>("CurrencyRate")
-                        .HasColumnType("integer")
-                        .HasColumnName("currency_rate");
 
                     b.Property<CurrencyType>("CurrencyType")
                         .HasColumnType("currency_type")

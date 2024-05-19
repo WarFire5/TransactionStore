@@ -21,7 +21,8 @@ namespace TransactionStore.DataLayer.Migrations
                 name: "leads",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false)
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    status = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -56,7 +57,6 @@ namespace TransactionStore.DataLayer.Migrations
                     account_id = table.Column<Guid>(type: "uuid", nullable: true),
                     transaction_type = table.Column<TransactionType>(type: "transaction_type", nullable: false),
                     currency_type = table.Column<CurrencyType>(type: "currency_type", nullable: false),
-                    currency_rate = table.Column<int>(type: "integer", nullable: false),
                     amount = table.Column<int>(type: "integer", nullable: false),
                     time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     status = table.Column<bool>(type: "boolean", nullable: false)
