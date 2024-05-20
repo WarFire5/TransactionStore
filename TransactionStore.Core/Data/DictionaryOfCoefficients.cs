@@ -1,101 +1,82 @@
-namespace TransactionStore.Core.Data;
-
-public class DictionaryOfCoefficients
+namespace TransactionStore.Core.Data
 {
-    Dictionary<string, decimal> _rate;
-
-    public DictionaryOfCoefficients()
+    public class DictionaryOfCoefficients
     {
-        _rate = new Dictionary<string, decimal>()
+        private readonly Dictionary<string, decimal> _rate;
+
+        public DictionaryOfCoefficients()
+        {
+            _rate = new Dictionary<string, decimal>()
             {
-                { "RUBUSD", 1 },
-                { "USDRUB", 2 },
-                
-                { "RUBEUR", 3 },
-                { "EURRUB", 4 },
-                
-                { "RUBJPY", 5 },
-                { "JPYRUB", 6 },
-                
-                { "RUBCNY", 7 },
-                { "CNYRUB", 8 },
-                
-                { "RUBRSD", 9 },
-                { "RSDRUB", 10 },
-                
-                { "RUBBGN", 11 },
-                { "BGNRUB", 12 },
-                
-                { "RUBARS", 13 },
-                { "ARSRUB", 14 },
-                
-                { "USDEUR", 15 },
-                { "EURUSD", 16 },
-                
-                { "USDJPY", 17 },
-                { "JPYUSD", 18 },
-                
-                { "USDCNY", 19 },
-                { "CNYUSD", 20 },
-                
-                { "USDRSD", 21 },
-                { "RSDUSD", 22 },
-                
-                { "USDBGN", 23 },
-                { "BGNUSD", 24 },
-                
-                { "USDARS", 25 },
-                { "ARSUSD", 26 },
-                
-                { "EURJPY", 27 },
-                { "JPYEUR", 28 },
-                
-                { "EURCNY", 29 },
-                { "CNYEUR", 30 },
-                
-                { "EURRSD", 31 },
-                { "RSDEUR", 32 },
-                
-                { "EURBGN", 33 },
-                { "BGNEUR", 34 },
-                
-                { "EURARS", 35 },
-                { "ARSEUR", 36 },
-                
-                { "JPYCNY", 37 },
-                { "CNYJPY", 38 },
-                
-                { "JPYRSD", 39 },
-                { "RSDJPY", 40 },
-                
-                { "JPYBGN", 41 },
-                { "BGNJPY", 42 },
-                
-                { "JPYARS", 43 },
-                { "ARSJPY", 44 },
-                
-                { "CNYRSD", 45 },
-                { "RSDCNY", 46 },
-                
-                { "CNYBGN", 47 },
-                { "BGNCNY", 48 },
-                
-                { "CNYARS", 49 },
-                { "ARSCNY", 50 },
-                
-                { "RSDBGN", 51 },
-                { "BGNRSD", 52 },
-                
-                { "RSDARS", 53 },
-                { "ARSRSD", 54 },
-                
-                { "BGNARS", 55 },
-                { "ARSBGN", 56 }
-            };
-    }
+                { "RUBUSD", 0.011m },
+                { "RUBEUR", 0.010m },
+                { "RUBJPY", 1.71m },
+                { "RUBCNY", 0.079m },
+                { "RUBRSD", 1.18m },
+                { "RUBBGN", 0.020m },
+                { "RUBARS", 9.72m },
 
-    public decimal GetRate(string currency1, string currency2)
-    {
-        return _rate[currency1 + currency2];
+                { "USDRUB", 90.89m },
+                { "USDEUR", 0.92m },
+                { "USDJPY", 155.66m },
+                { "USDCNY", 7.22m },
+                { "USDRSD", 107.50m },
+                { "USDBGN", 1.80m },
+                { "USDARS", 883.67m },
+
+                { "EURRUB", 98.80m },
+                { "EURUSD", 1.09m },
+                { "EURJPY", 169.16m },
+                { "EURCNY", 7.85m },
+                { "EURRSD", 116.86m },
+                { "EURBGN", 1.95m },
+                { "EURARS", 960.55m },
+
+                { "JPYRUB", 0.58m },
+                { "JPYUSD", 0.0064m },
+                { "JPYEUR", 0.0059m },
+                { "JPYCNY", 0.046m },
+                { "JPYRSD", 0.69m },
+                { "JPYBGN", 0.012m },
+                { "JPYARS", 5.68m },
+
+                { "CNYRUB", 12.83m },
+                { "CNYUSD", 0.14m },
+                { "CNYEUR", 0.13m },
+                { "CNYJPY", 21.95m },
+                { "CNYRSD", 15.16m },
+                { "CNYBGN", 0.25m },
+                { "CNYARS", 124.61m },
+
+                { "RSDRUB", 0.85m },
+                { "RSDUSD", 0.0093m },
+                { "RSDEUR", 0.0086m },
+                { "RSDJPY", 1.45m },
+                { "RSDCNY", 0.067m },
+                { "RSDBGN", 0.017m },
+                { "RSDARS", 8.22m },
+
+                { "BGNRUB", 50.63m },
+                { "BGNUSD", 0.56m },
+                { "BGNEUR", 0.51m },
+                { "BGNJPY", 86.71m },
+                { "BGNCNY", 4.02m },
+                { "BGNRSD", 59.89m },
+                { "BGNARS", 492.16m },
+
+                { "ARSRUB", 0.10m },
+                { "ARSUSD", 0.0011m },
+                { "ARSEUR", 0.0010m },
+                { "ARSJPY", 0.18m },
+                { "ARSCNY", 0.0082m },
+                { "ARSRSD", 0.12m },
+                { "ARSBGN", 0.0020m }
+            };
+        }
+
+        public decimal GetRate(string currency1, string currency2)
+        {
+            return _rate[currency1 + currency2];
+        }
     }
 }
