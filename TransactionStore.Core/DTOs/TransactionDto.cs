@@ -2,12 +2,12 @@
 
 namespace TransactionStore.Core.DTOs;
 
-public class TransactionDto : IdContainer
+public class TransactionDto
 {
-    public AccountDto Account { get; set; }
+    public Guid Id { get; set; }
+    public Guid Accountid { get; set; }
     public TransactionType TransactionType { get; set; }
     public CurrencyType CurrencyType { get; set; }
     public int Amount { get; set; }
-    public DateTime time { get; set; }
-    public bool Status { get; set; }
+    public DateTime Date { get; set; }
 }

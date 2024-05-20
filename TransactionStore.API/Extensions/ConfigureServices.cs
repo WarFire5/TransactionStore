@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using TransactionStore.Core.Models.Leads;
-using TransactionStore.Core.Models.Accounts;
 using TransactionStore.Core.Models.Transactions;
 
 namespace TransactionStore.API.Extensions;
@@ -35,6 +33,6 @@ public static class ConfigureServices
         services.AddEndpointsApiExplorer();
         services.AddSwagger();
         services.ConfigureDataBase(configurationManager);
-        services.AddAutoMapper(typeof(LeadsMappingProfile), typeof(AccountsMappingProfile), typeof(TransactionsMappingProfile));
+        services.AddAutoMapper(typeof(TransactionsMappingProfile));
     }
 }
