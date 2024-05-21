@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using FluentValidation;
+using System.Text.RegularExpressions;
 using TransactionStore.Core.Models.Transactions.Requests;
-using FluentValidation;
 
 namespace Backend.Core.Validators;
 
@@ -20,16 +20,16 @@ public class AddDepositWithdrawValidator : AbstractValidator<DepositWithdrawRequ
         RuleFor(t => t.TransactionType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип транзакции.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип транзакции.");
-        
+
         RuleFor(t => t.CurrencyType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
-        
+
         RuleFor(t => t.Amount)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
             .NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.");
-        
+
         RuleFor(t => t.Date)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите дату и время операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите дату и время операции.")

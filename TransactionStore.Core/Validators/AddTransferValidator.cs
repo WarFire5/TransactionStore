@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using FluentValidation;
+using System.Text.RegularExpressions;
 using TransactionStore.Core.Models.Transactions.Requests;
-using FluentValidation;
 
 namespace Backend.Core.Validators;
 
@@ -22,32 +22,32 @@ public class AddTransferValidator : AbstractValidator<TransferRequest>
             .Must(guid => guid.ToString().Length >= 36 && guid.ToString().Length <= 38)
             .WithMessage("Длина GUID должна быть не менее 36 и не более 38 символов.")
             // Проверяем формат GUID с помощью регулярного выражения
-            .Must(guid => Regex.IsMatch(guid.ToString("XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"), @"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$"))
+            .Must(guid => Regex.IsMatch(guid.ToString(), @"^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$"))
             .WithMessage("Некорректный формат GUID. GUID должен быть в формате 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', " +
                          "где X — это шестнадцатеричный символ. Допустимы фигурные скобки в начале и конце строки.");
 
         RuleFor(t => t.TransactionType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип транзакции.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип транзакции.");
-        
+
         RuleFor(t => t.CurrencyFromType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
-        
+
         RuleFor(t => t.CurrencyToType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
-        
+
         RuleFor(t => t.AmountFrom)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
             .NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.");
-        
+
         RuleFor(t => t.AmountTo)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
             .NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.");
-        
+
         RuleFor(t => t.Date)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите дату и время операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите дату и время операции.")
