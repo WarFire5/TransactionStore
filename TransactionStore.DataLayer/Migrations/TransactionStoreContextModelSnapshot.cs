@@ -33,9 +33,9 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("Accountid")
+                    b.Property<Guid>("AccountId")
                         .HasColumnType("uuid")
-                        .HasColumnName("accountid");
+                        .HasColumnName("account_id");
 
                     b.Property<int>("Amount")
                         .HasColumnType("integer")
