@@ -11,6 +11,5 @@ public class GlobalFilter : IActionFilter
 
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        throw new NotImplementedException();
     }
 }
