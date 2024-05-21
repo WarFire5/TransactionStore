@@ -12,6 +12,7 @@ public static class ConfigureServices
     {
         services.AddScoped<ITransactionsService, TransactionsService>();
 
-        services.AddScoped<IValidator<AddTransactionRequest>, AddTransactionValidator>();
+        services.AddScoped<IValidator<TransferRequest>, AddTransferValidator>();
+        services.AddScoped<IValidator<DepositWithdrawRequest>, AddDepositWithdrawValidator>();
     }
 }

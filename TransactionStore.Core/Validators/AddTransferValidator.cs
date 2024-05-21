@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace Backend.Core.Validators;
 
-public class AddTransactionValidator : AbstractValidator<AddTransactionRequest>
+public class AddTransferValidator : AbstractValidator<TransferRequest>
 {
-    public AddTransactionValidator()
+    public AddTransferValidator()
     {
         RuleFor(t => t.AccountFromId)
             .NotEmpty().NotNull().WithMessage("GUID не должен быть значением по умолчанию (default).")
@@ -30,11 +30,20 @@ public class AddTransactionValidator : AbstractValidator<AddTransactionRequest>
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип транзакции.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип транзакции.");
         
-        RuleFor(t => t.CurrencyType)
+        RuleFor(t => t.CurrencyFromType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
         
-        RuleFor(t => t.Amount)
+        RuleFor(t => t.CurrencyToType)
+            .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
+            .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
+        
+        RuleFor(t => t.AmountFrom)
+            .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
+            .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
+            .NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.");
+        
+        RuleFor(t => t.AmountTo)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
             .NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.");
@@ -45,6 +54,7 @@ public class AddTransactionValidator : AbstractValidator<AddTransactionRequest>
             .Must(date => date != default(DateTime)).WithMessage("Дата и время операции не должны быть значением по умолчанию.")
             .Must(date => date >= new DateTime(2024, 5, 21)).WithMessage("Дата операции не может быть раньше 2024-05-21.")
             .Must(date => date <= DateTime.Now).WithMessage("Дата операции не может быть позже текущей даты и времени.")
+            // Проверяем формат DateTime с помощью регулярного выражения
             .Must(date => Regex.IsMatch(date.ToString("yyyy-MM-dd HH:mm:ss.ffffff"), @"^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{6}$"))
             .WithMessage("Дата и время операции должны быть в формате 'yyyy-MM-dd HH:mm:ss.ffffff'.");
     }
