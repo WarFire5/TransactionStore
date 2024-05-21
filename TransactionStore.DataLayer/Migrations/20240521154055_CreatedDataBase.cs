@@ -22,7 +22,7 @@ namespace TransactionStore.DataLayer.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    accountid = table.Column<Guid>(type: "uuid", nullable: false),
+                    account_id = table.Column<Guid>(type: "uuid", nullable: false),
                     transaction_type = table.Column<TransactionType>(type: "transaction_type", nullable: false),
                     currency_type = table.Column<CurrencyType>(type: "currency_type", nullable: false),
                     amount = table.Column<int>(type: "integer", nullable: false),
