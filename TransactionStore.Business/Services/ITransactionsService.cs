@@ -1,6 +1,4 @@
-﻿using TransactionStore.Core.DTOs;
-using TransactionStore.Core.Models.Transactions.Requests;
-using TransactionStore.Core.Models.Transactions.Responses;
+﻿using TransactionStore.Core.Models.Transactions.Requests;
 
 namespace TransactionStore.Business.Services;
 

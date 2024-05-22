@@ -22,7 +22,7 @@ public class TransactionsController : Controller
     public ActionResult<Guid> AddDepositTransaction([FromBody] DepositWithdrawRequest request)
     {
         _logger.Information(
-            $"Для счёта с Id {request.AccountId} добавлена транзакция типа {request.TransactionType}.");
+            $"Для счёта с Id {request.AccountId} добавлена транзакция на пополнение.");
         return Ok(_transactionsService.AddDepositTransaction(request));
     }
 
@@ -31,7 +31,7 @@ public class TransactionsController : Controller
     public ActionResult<Guid> AddWithdrawTransaction([FromBody] DepositWithdrawRequest request)
     {
         _logger.Information(
-            $"Для счёта с Id {request.AccountId} добавлена транзакция типа {request.TransactionType}.");
+            $"Для счёта с Id {request.AccountId} добавлена транзакция на снятие.");
         return Ok(_transactionsService.AddWithdrawTransaction(request));
     }
 
@@ -40,7 +40,7 @@ public class TransactionsController : Controller
     public ActionResult AddTransferTransaction([FromBody] TransferRequest request)
     {
         _logger.Information(
-            $"Транзакция типа {request.TransactionType} со счёта {request.AccountFromId} на счёт {request.AccountToId} добавлена.");
+            $"Транзакция на перевод со счёта с Id {request.AccountFromId} на счёт с Id {request.AccountToId} добавлена в базу данных.");
         _transactionsService.AddTransferTransaction(request);
         return Ok();
     }

@@ -1,5 +1,4 @@
-﻿using TransactionStore.Core.DTOs;
-using TransactionStore.Core.Enums;
+﻿using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Core.Models.Transactions.Responses;
 

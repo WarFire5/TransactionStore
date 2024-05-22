@@ -2,8 +2,10 @@
 using FluentValidation;
 using Serilog;
 using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Exceptions;
 using TransactionStore.Core.Models.Transactions.Requests;
 using TransactionStore.DataLayer.Repositories;
+using TransactionStore.Models.Exceptions;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
@@ -35,7 +37,7 @@ public class TransactionsService : ITransactionsService
             TransactionDto transaction = new TransactionDto()
             {
                 AccountId = request.AccountId,
-                TransactionType = request.TransactionType,
+                TransactionType = Core.Enums.TransactionType.Deposit,
                 CurrencyType = request.CurrencyType,
                 Amount = request.Amount,
                 Date = request.Date
@@ -54,16 +56,23 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction = new TransactionDto()
-            {
-                AccountId = request.AccountId,
-                TransactionType = request.TransactionType,
-                CurrencyType = request.CurrencyType,
-                Amount = request.Amount * -1,
-                Date = request.Date
-            };
+            var balance = GetBalanceByAccountId(request.AccountId);
 
-            return _transactionsRepository.AddWithdrawTransaction(transaction);
+            if (request.Amount <= balance)
+            {
+                TransactionDto transaction = new TransactionDto()
+                {
+                    AccountId = request.AccountId,
+                    TransactionType = Core.Enums.TransactionType.Withdraw,
+                    CurrencyType = request.CurrencyType,
+                    Amount = request.Amount * -1,
+                    Date = request.Date
+                };
+
+                return _transactionsRepository.AddWithdrawTransaction(transaction);
+            }
+
+            throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -76,26 +85,39 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            TransactionDto transferWithdraw = new TransactionDto()
+            if (request.AccountFromId != request.AccountToId && request.CurrencyFromType != request.CurrencyToType)
             {
-                AccountId = request.AccountFromId,
-                TransactionType = request.TransactionType,
-                CurrencyType = request.CurrencyFromType,
-                Amount = request.AmountFrom * -1,
-                Date = request.Date
-            };
+                var balance = GetBalanceByAccountId(request.AccountFromId);
 
-            TransactionDto transferDeposit = new TransactionDto()
-            {
-                AccountId = request.AccountToId,
-                TransactionType = request.TransactionType,
-                CurrencyType = request.CurrencyToType,
-                Amount = request.AmountTo,
-                Date = request.Date
-            };
+                if (request.AmountFrom <= balance)
+                {
+                    TransactionDto transferWithdraw = new TransactionDto()
+                    {
+                        AccountId = request.AccountFromId,
+                        TransactionType = Core.Enums.TransactionType.Transfer,
+                        CurrencyType = request.CurrencyFromType,
+                        Amount = request.AmountFrom * -1,
+                        Date = request.Date
+                    };
 
-            _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+                    TransactionDto transferDeposit = new TransactionDto()
+                    {
+                        AccountId = request.AccountToId,
+                        TransactionType = Core.Enums.TransactionType.Transfer,
+                        CurrencyType = request.CurrencyToType,
+                        Amount = request.AmountTo,
+                        Date = request.Date
+                    };
+
+                    _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+                }
+
+                throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+            }
+
+            throw new NotFoundException("Нельзя сделать перевод внутри одного счёта. Операция не существует.");
         }
+
         else
         {
             string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
