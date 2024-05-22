@@ -1,9 +1,10 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FluentValidation;
 using Serilog;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
 using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Transactions.Responses;
 using TransactionStore.DataLayer.Repositories;
 using TransactionStore.Models.Exceptions;
 using ValidationException = FluentValidation.ValidationException;
@@ -123,5 +124,20 @@ public class TransactionsService : ITransactionsService
             string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
             throw new ValidationException(exceptions);
         }
+    }
+
+    public AccountBalanceResponse GetBalanceByAccountId(Guid id)
+    {
+        _logger.Information("Вызываем метод репозитория");
+        List<TransactionDto> transactionDtos = _transactionsRepository.GetBalanceByAccountId(id);
+        var balance = transactionDtos.Sum(t => t.Amount);
+
+        _logger.Information("Считаем и передаем баланс");
+        TransactionDto accountBalance = new TransactionDto();
+        accountBalance.Amount = balance;
+        accountBalance.AccountId = transactionDtos[0].AccountId;
+        accountBalance.CurrencyType = transactionDtos[0].CurrencyType;
+
+        return _mapper.Map<AccountBalanceResponse>(accountBalance);
     }
 }

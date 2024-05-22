@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Transactions.Responses;
 
 namespace TransactionStore.API.Controllers;
 
@@ -43,5 +44,12 @@ public class TransactionsController : Controller
             $"Транзакция на перевод со счёта с Id {request.AccountFromId} на счёт с Id {request.AccountToId} добавлена в базу данных.");
         _transactionsService.AddTransferTransaction(request);
         return Ok();
+    }
+
+    [HttpGet("{id}")]
+    public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
+    {
+        _logger.Information($"�������� ������ �������� {id}");
+        return Ok(_transactionsService.GetBalanceByAccountId(id));
     }
 }

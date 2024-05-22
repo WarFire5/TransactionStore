@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Models.Transactions.Requests;
 using TransactionStore.Core.Models.Transactions.Responses;
@@ -13,5 +13,7 @@ public class TransactionsMappingProfile : Profile
         CreateMap<TransferRequest, TransactionDto>();
 
         CreateMap<TransactionDto, TransactionResponse>();
+        CreateMap<TransactionDto, AccountBalanceResponse>()
+            .ForMember(d => d.Balance, opt => opt.MapFrom(s =>s.Amount));
     }
 }

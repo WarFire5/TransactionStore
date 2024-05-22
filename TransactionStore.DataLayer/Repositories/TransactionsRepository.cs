@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using TransactionStore.Core.DTOs;
 
 namespace TransactionStore.DataLayer.Repositories;
@@ -32,5 +32,11 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _ctx.Transactions.Add(transferWithdraw);
         _ctx.Transactions.Add(transferDeposit);
         _ctx.SaveChanges();
+    }
+
+    public List<TransactionDto> GetBalanceByAccountId(Guid id)
+    {
+        _logger.Information($"Ищем в базе транзакции аккаунта {id}");
+        return _ctx.Transactions.Where(t=>t.AccountId==id).ToList();
     }
 }
