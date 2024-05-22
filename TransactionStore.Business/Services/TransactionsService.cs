@@ -57,9 +57,9 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            var balance = GetBalanceByAccountId(request.AccountId);
+            var accountBalanceResponse = GetBalanceByAccountId(request.AccountId);
 
-            if (request.Amount <= balance)
+            if (request.Amount <= accountBalanceResponse.Balance)
             {
                 TransactionDto transaction = new TransactionDto()
                 {
@@ -88,9 +88,9 @@ public class TransactionsService : ITransactionsService
         {
             if (request.AccountFromId != request.AccountToId && request.CurrencyFromType != request.CurrencyToType)
             {
-                var balance = GetBalanceByAccountId(request.AccountFromId);
+                var accountBalanceResponse = GetBalanceByAccountId(request.AccountFromId);
 
-                if (request.AmountFrom <= balance)
+                if (request.AmountFrom <= accountBalanceResponse.Balance)
                 {
                     TransactionDto transferWithdraw = new TransactionDto()
                     {
