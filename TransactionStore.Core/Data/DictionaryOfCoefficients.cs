@@ -76,6 +76,9 @@ public class DictionaryOfCoefficients
 
     public decimal GetRate(string currency1, string currency2)
     {
+        currency1 = currency1.ToUpper();
+        currency2 = currency2.ToUpper();
+
         return _rate[currency1 + currency2];
     }
 }

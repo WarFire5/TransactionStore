@@ -37,8 +37,8 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("account_id");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer")
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
                         .HasColumnName("amount");
 
                     b.Property<CurrencyType>("CurrencyType")

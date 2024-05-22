@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using Serilog;
+using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
 using TransactionStore.Core.Models.Transactions.Requests;
@@ -105,33 +106,42 @@ public class TransactionsService : ITransactionsService
             {
                 var accountBalanceResponse = GetBalanceByAccountId(request.AccountFromId);
 
-                if (request.AmountFrom <= accountBalanceResponse.Balance)
+                if (request.Amount <= accountBalanceResponse.Balance)
                 {
                     TransactionDto transferWithdraw = new TransactionDto()
                     {
                         AccountId = request.AccountFromId,
                         TransactionType = Core.Enums.TransactionType.Transfer,
                         CurrencyType = request.CurrencyFromType,
-                        Amount = request.AmountFrom * -1,
+                        Amount = request.Amount * -1,
                         Date = request.Date
                     };
+
+                    DictionaryOfCoefficients dictionaryOfCoefficients = new DictionaryOfCoefficients();
+                    var coef = dictionaryOfCoefficients.GetRate(request.CurrencyFromType.ToString(), request.CurrencyToType.ToString());
 
                     TransactionDto transferDeposit = new TransactionDto()
                     {
                         AccountId = request.AccountToId,
                         TransactionType = Core.Enums.TransactionType.Transfer,
                         CurrencyType = request.CurrencyToType,
-                        Amount = request.AmountTo,
+                        Amount = request.Amount * coef,
                         Date = request.Date
                     };
 
                     _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
                 }
 
-                throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+                else
+                {
+                    throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+                }
             }
 
-            throw new NotFoundException("Нельзя сделать перевод внутри одного счёта. Операция не существует.");
+            else
+            {
+                throw new NotFoundException("Нельзя сделать перевод внутри одного счёта. Операция не существует.");
+            }
         }
 
         else

@@ -26,10 +26,6 @@ public class AddTransferValidator : AbstractValidator<TransferRequest>
             .WithMessage("Некорректный формат GUID. GUID должен быть в формате 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', " +
                          "где X — это шестнадцатеричный символ. Допустимы фигурные скобки в начале и конце строки.");
 
-        //RuleFor(t => t.TransactionType)
-        //    .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип транзакции.")
-        //    .NotNull().WithMessage("Поле не может быть null. Укажите тип транзакции.");
-
         RuleFor(t => t.CurrencyFromType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
@@ -38,24 +34,17 @@ public class AddTransferValidator : AbstractValidator<TransferRequest>
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("Поле не может быть null. Укажите тип валюты.");
 
-        RuleFor(t => t.AmountFrom)
+        RuleFor(t => t.Amount)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
             //.NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.")
-            .LessThan(1).WithMessage("Нельзя снять меньше 100.")
-            .GreaterThanOrEqualTo(1000000).WithMessage("Превышен максимальный лимит на одну операцию.");
-
-        RuleFor(t => t.AmountTo)
-            .NotEmpty().WithMessage("Поле не может быть пустым. Введите сумму операции.")
-            .NotNull().WithMessage("Поле не может быть null. Введите сумму операции.")
-            //.NotEqual(0).WithMessage("Сумма операции не может быть равной нулю.")
-            .LessThan(1).WithMessage("Нельзя внести меньше 1.")
-            .GreaterThanOrEqualTo(1000000).WithMessage("Превышен максимальный лимит на одну операцию.");
+            .GreaterThanOrEqualTo(1).WithMessage("Сумма не должна быть меньше 1.")
+            .LessThanOrEqualTo(1000000).WithMessage("Превышен максимальный лимит на операцию.");
 
         RuleFor(t => t.Date)
             .NotEmpty().WithMessage("Поле не может быть пустым. Введите дату и время операции.")
             .NotNull().WithMessage("Поле не может быть null. Введите дату и время операции.")
-            .Must(date => date != default(DateTime)).WithMessage("Дата и время операции не должны быть значением по умолчанию.")
+            .Must(date => date != default).WithMessage("Дата и время операции не должны быть значением по умолчанию.")
             .Must(date => date >= new DateTime(2024, 5, 21)).WithMessage("Дата операции не может быть раньше 2024-05-21.")
             .Must(date => date <= DateTime.Now).WithMessage("Дата операции не может быть позже текущей даты и времени.")
             // Проверяем формат DateTime с помощью регулярного выражения

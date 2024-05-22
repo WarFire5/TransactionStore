@@ -13,7 +13,7 @@ using TransactionStore.DataLayer;
 namespace TransactionStore.DataLayer.Migrations
 {
     [DbContext(typeof(TransactionStoreContext))]
-    [Migration("20240521154055_CreatedDataBase")]
+    [Migration("20240522162435_CreatedDataBase")]
     partial class CreatedDataBase
     {
         /// <inheritdoc />
@@ -40,8 +40,8 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("account_id");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer")
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
                         .HasColumnName("amount");
 
                     b.Property<CurrencyType>("CurrencyType")

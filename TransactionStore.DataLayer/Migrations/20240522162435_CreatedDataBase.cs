@@ -25,7 +25,7 @@ namespace TransactionStore.DataLayer.Migrations
                     account_id = table.Column<Guid>(type: "uuid", nullable: false),
                     transaction_type = table.Column<TransactionType>(type: "transaction_type", nullable: false),
                     currency_type = table.Column<CurrencyType>(type: "currency_type", nullable: false),
-                    amount = table.Column<int>(type: "integer", nullable: false),
+                    amount = table.Column<decimal>(type: "numeric", nullable: false),
                     date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>

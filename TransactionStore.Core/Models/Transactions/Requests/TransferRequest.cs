@@ -8,7 +8,6 @@ public class TransferRequest
     public Guid AccountToId { get; set; }
     public CurrencyType CurrencyFromType { get; set; }
     public CurrencyType CurrencyToType { get; set; }
-    public int AmountFrom { get; set; }
-    public int AmountTo { get; set; }
+    public int Amount { get; set; }
     public DateTime Date { get; set; }
 }
