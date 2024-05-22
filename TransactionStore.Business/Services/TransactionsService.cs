@@ -29,6 +29,21 @@ public class TransactionsService : ITransactionsService
         _addTransferValidator = addTransferValidator;
     }
 
+    public AccountBalanceResponse GetBalanceByAccountId(Guid id)
+    {
+        _logger.Information("Вызываем метод репозитория");
+        List<TransactionDto> transactionDtos = _transactionsRepository.GetBalanceByAccountId(id);
+        var balance = transactionDtos.Sum(t => t.Amount);
+
+        _logger.Information("Считаем и передаем баланс");
+        TransactionDto accountBalance = new TransactionDto();
+        accountBalance.Amount = balance;
+        accountBalance.AccountId = transactionDtos[0].AccountId;
+        accountBalance.CurrencyType = transactionDtos[0].CurrencyType;
+
+        return _mapper.Map<AccountBalanceResponse>(accountBalance);
+    }
+
     public Guid AddDepositTransaction(DepositWithdrawRequest request)
     {
         var validationResult = _addDepositWithdrawValidator.Validate(request);
@@ -124,20 +139,5 @@ public class TransactionsService : ITransactionsService
             string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
             throw new ValidationException(exceptions);
         }
-    }
-
-    public AccountBalanceResponse GetBalanceByAccountId(Guid id)
-    {
-        _logger.Information("Вызываем метод репозитория");
-        List<TransactionDto> transactionDtos = _transactionsRepository.GetBalanceByAccountId(id);
-        var balance = transactionDtos.Sum(t => t.Amount);
-
-        _logger.Information("Считаем и передаем баланс");
-        TransactionDto accountBalance = new TransactionDto();
-        accountBalance.Amount = balance;
-        accountBalance.AccountId = transactionDtos[0].AccountId;
-        accountBalance.CurrencyType = transactionDtos[0].CurrencyType;
-
-        return _mapper.Map<AccountBalanceResponse>(accountBalance);
     }
 }

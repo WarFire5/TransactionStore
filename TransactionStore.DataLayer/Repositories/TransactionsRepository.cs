@@ -11,6 +11,12 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
     }
 
+    public List<TransactionDto> GetBalanceByAccountId(Guid id)
+    {
+        _logger.Information($"Ищем в базе транзакции аккаунта {id}");
+        return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
+    }
+
     public Guid AddDepositTransaction(TransactionDto transaction)
     {
         _ctx.Transactions.Add(transaction);
@@ -32,11 +38,5 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _ctx.Transactions.Add(transferWithdraw);
         _ctx.Transactions.Add(transferDeposit);
         _ctx.SaveChanges();
-    }
-
-    public List<TransactionDto> GetBalanceByAccountId(Guid id)
-    {
-        _logger.Information($"Ищем в базе транзакции аккаунта {id}");
-        return _ctx.Transactions.Where(t=>t.AccountId==id).ToList();
     }
 }
