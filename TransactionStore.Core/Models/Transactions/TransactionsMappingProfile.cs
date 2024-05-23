@@ -12,8 +12,9 @@ public class TransactionsMappingProfile : Profile
         CreateMap<DepositWithdrawRequest, TransactionDto>();
         CreateMap<TransferRequest, TransactionDto>();
 
-        CreateMap<TransactionDto, TransactionResponse>();
+        CreateMap<TransactionDto, CurrencyTypeResponse>();
         CreateMap<TransactionDto, AccountBalanceResponse>()
             .ForMember(d => d.Balance, opt => opt.MapFrom(s =>s.Amount));
+        CreateMap<TransactionDto, TransactionResponse>();
     }
 }

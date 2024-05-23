@@ -3,6 +3,7 @@ using FluentValidation;
 using Serilog;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Enums;
 using TransactionStore.Core.Exceptions;
 using TransactionStore.Core.Models.Transactions.Requests;
 using TransactionStore.Core.Models.Transactions.Responses;
@@ -30,6 +31,18 @@ public class TransactionsService : ITransactionsService
         _addTransferValidator = addTransferValidator;
     }
 
+    public CurrencyTypeResponse GetCurrencyTypeByAccountId(Guid id)
+    {
+        var сurrencyType = _transactionsRepository.GetCurrencyTypeByAccountId(id);
+
+        //if (сurrencyType == null)
+        //{
+        //    throw new NotFoundException("Операции с переданным accountId не найдены.");
+        //}
+
+        return _mapper.Map<CurrencyTypeResponse>(сurrencyType);
+    }
+
     public AccountBalanceResponse GetBalanceByAccountId(Guid id)
     {
         _logger.Information("Вызываем метод репозитория");
@@ -51,16 +64,25 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction = new TransactionDto()
-            {
-                AccountId = request.AccountId,
-                TransactionType = Core.Enums.TransactionType.Deposit,
-                CurrencyType = request.CurrencyType,
-                Amount = request.Amount,
-                Date = request.Date
-            };
+            var сurrencyTypeResponse = GetCurrencyTypeByAccountId(request.AccountId);
 
-            return _transactionsRepository.AddDepositTransaction(transaction);
+            if (сurrencyTypeResponse == null) сurrencyTypeResponse = new CurrencyTypeResponse();
+
+            if (request.CurrencyType == сurrencyTypeResponse.CurrencyType || сurrencyTypeResponse.CurrencyType == null)
+            {
+                TransactionDto transaction = new TransactionDto()
+                {
+                    AccountId = request.AccountId,
+                    TransactionType = TransactionType.Deposit,
+                    CurrencyType = request.CurrencyType,
+                    Amount = request.Amount,
+                    Date = request.Date
+                };
+
+                return _transactionsRepository.AddDepositTransaction(transaction);
+            }
+
+            throw new InappropriateCurrencyTypeException("Тип валюты не совпадает с типом валюты аккаунта.");
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -73,23 +95,32 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            var accountBalanceResponse = GetBalanceByAccountId(request.AccountId);
+            var сurrencyTypeResponse = GetCurrencyTypeByAccountId(request.AccountId);
 
-            if (request.Amount <= accountBalanceResponse.Balance)
+            if (сurrencyTypeResponse == null) сurrencyTypeResponse = new CurrencyTypeResponse();
+
+            if (request.CurrencyType == сurrencyTypeResponse.CurrencyType || сurrencyTypeResponse.CurrencyType == null)
             {
-                TransactionDto transaction = new TransactionDto()
-                {
-                    AccountId = request.AccountId,
-                    TransactionType = Core.Enums.TransactionType.Withdraw,
-                    CurrencyType = request.CurrencyType,
-                    Amount = request.Amount * -1,
-                    Date = request.Date
-                };
+                var accountBalanceResponse = GetBalanceByAccountId(request.AccountId);
 
-                return _transactionsRepository.AddWithdrawTransaction(transaction);
+                if (request.Amount <= accountBalanceResponse.Balance)
+                {
+                    TransactionDto transaction = new TransactionDto()
+                    {
+                        AccountId = request.AccountId,
+                        TransactionType = TransactionType.Withdraw,
+                        CurrencyType = request.CurrencyType,
+                        Amount = request.Amount * -1,
+                        Date = request.Date
+                    };
+
+                    return _transactionsRepository.AddWithdrawTransaction(transaction);
+                }
+
+                throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
             }
 
-            throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+            throw new InappropriateCurrencyTypeException("Тип валюты не совпадает с типом валюты аккаунта.");
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -104,37 +135,61 @@ public class TransactionsService : ITransactionsService
         {
             if (request.AccountFromId != request.AccountToId && request.CurrencyFromType != request.CurrencyToType)
             {
-                var accountBalanceResponse = GetBalanceByAccountId(request.AccountFromId);
+                var сurrencyTypeResponse = GetCurrencyTypeByAccountId(request.AccountFromId);
 
-                if (request.Amount <= accountBalanceResponse.Balance)
+                if (сurrencyTypeResponse == null) сurrencyTypeResponse = new CurrencyTypeResponse();
+
+                if (request.CurrencyFromType == сurrencyTypeResponse.CurrencyType || сurrencyTypeResponse.CurrencyType == null)
                 {
-                    TransactionDto transferWithdraw = new TransactionDto()
+                    var accountBalanceResponse = GetBalanceByAccountId(request.AccountFromId);
+
+                    if (request.Amount <= accountBalanceResponse.Balance)
                     {
-                        AccountId = request.AccountFromId,
-                        TransactionType = Core.Enums.TransactionType.Transfer,
-                        CurrencyType = request.CurrencyFromType,
-                        Amount = request.Amount * -1,
-                        Date = request.Date
-                    };
+                        var сurrencyTypeToResponse = GetCurrencyTypeByAccountId(request.AccountToId);
 
-                    DictionaryOfCoefficients dictionaryOfCoefficients = new DictionaryOfCoefficients();
-                    var coef = dictionaryOfCoefficients.GetRate(request.CurrencyFromType.ToString(), request.CurrencyToType.ToString());
+                        if (сurrencyTypeToResponse == null) сurrencyTypeToResponse = new CurrencyTypeResponse();
 
-                    TransactionDto transferDeposit = new TransactionDto()
+                        if (request.CurrencyToType == сurrencyTypeResponse.CurrencyType || сurrencyTypeToResponse.CurrencyType == null)
+                        {
+                            TransactionDto transferWithdraw = new TransactionDto()
+                            {
+                                AccountId = request.AccountFromId,
+                                TransactionType = TransactionType.Transfer,
+                                CurrencyType = request.CurrencyFromType,
+                                Amount = request.Amount * -1,
+                                Date = request.Date
+                            };
+
+                            DictionaryOfCoefficients dictionaryOfCoefficients = new DictionaryOfCoefficients();
+                            var coef = dictionaryOfCoefficients.GetRate(request.CurrencyFromType.ToString(), request.CurrencyToType.ToString());
+
+                            TransactionDto transferDeposit = new TransactionDto()
+                            {
+                                AccountId = request.AccountToId,
+                                TransactionType = TransactionType.Transfer,
+                                CurrencyType = request.CurrencyToType,
+                                Amount = request.Amount * coef,
+                                Date = request.Date
+                            };
+
+                            _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+                        }
+
+                        else
+                        {
+                            throw new InappropriateCurrencyTypeException("Тип валюты не совпадает с типом валюты аккаунта.");
+                        }
+                    }
+
+                    else
                     {
-                        AccountId = request.AccountToId,
-                        TransactionType = Core.Enums.TransactionType.Transfer,
-                        CurrencyType = request.CurrencyToType,
-                        Amount = request.Amount * coef,
-                        Date = request.Date
-                    };
-
-                    _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+                        throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+                    }
                 }
 
                 else
                 {
-                    throw new NotEnoughMoneyException("На балансе недостаточно средств для проведения операции.");
+                    throw new InappropriateCurrencyTypeException("Тип валюты не совпадает с типом валюты аккаунта.");
                 }
             }
 

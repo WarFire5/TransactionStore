@@ -4,6 +4,7 @@ namespace TransactionStore.DataLayer.Repositories;
 
 public interface ITransactionsRepository
 {   
+    TransactionDto GetCurrencyTypeByAccountId(Guid id);
     List<TransactionDto> GetBalanceByAccountId(Guid id);
     Guid AddDepositTransaction(TransactionDto transaction);
     Guid AddWithdrawTransaction(TransactionDto transaction);

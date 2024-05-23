@@ -11,9 +11,15 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
     }
 
+    public TransactionDto GetCurrencyTypeByAccountId(Guid id)
+    {
+        _logger.Information($"Ищем в базе первую транзакцию аккаунта с Id {id}.");
+        return _ctx.Transactions.Where(t => t.AccountId == id).Select(t => new TransactionDto { CurrencyType = t.CurrencyType }).FirstOrDefault();
+    }
+
     public List<TransactionDto> GetBalanceByAccountId(Guid id)
     {
-        _logger.Information($"Ищем в базе транзакции аккаунта {id}");
+        _logger.Information($"Ищем в базе транзакции аккаунта с Id {id}.");
         return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
     }
 
