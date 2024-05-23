@@ -6,5 +6,5 @@ public class AccountBalanceResponse
 {
     public Guid AccountId { get; set; }
     public CurrencyType CurrencyType { get; set; }
-    public int Balance { get; set; }
+    public decimal Balance { get; set; }
 }

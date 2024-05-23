@@ -8,6 +8,6 @@ public class AddTransactionResponse
     public Guid AccountId { get; set; }
     public TransactionType TransactionType { get; set; }
     public CurrencyType CurrencyType { get; set; }
-    public int Amount { get; set; }
+    public decimal Amount { get; set; }
     public DateTime Date { get; set; }
 }
