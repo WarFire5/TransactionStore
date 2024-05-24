@@ -13,7 +13,6 @@ namespace TransactionStore.DataLayer.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:Enum:currency_pair_type", "unknown,rubusd,rubeur,rubjpy,rubcny,rubrsd,rubbgn,rubars,usdrub,usdeur,usdjpy,usdcny,usdrsd,usdbgn,usdars,eurrub,eurusd,eurjpy,eurcny,eurrsd,eurbgn,eurars,jpyrub,jpyusd,jpyeur,jpycny,jpyrsd,jpybgn,jpyars,cnyrub,cnyusd,cnyeur,cnyjpy,cnyrsd,cnybgn,cnyars,rsdrub,rsdusd,rsdeur,rsdjpy,rsdcny,rsdbgn,rsdars,bgnrub,bgnusd,bgneur,bgnjpy,bgncny,bgnrsd,bgnars,arsrub,arsusd,arseur,arsjpy,arscny,arsrsd,arsbgn")
                 .Annotation("Npgsql:Enum:currency_type", "unknown,rub,usd,eur,jpy,cny,rsd,bgn,ars")
                 .Annotation("Npgsql:Enum:transaction_type", "unknown,deposit,withdraw,transfer");
 
@@ -25,8 +24,8 @@ namespace TransactionStore.DataLayer.Migrations
                     account_id = table.Column<Guid>(type: "uuid", nullable: false),
                     transaction_type = table.Column<TransactionType>(type: "transaction_type", nullable: false),
                     currency_type = table.Column<CurrencyType>(type: "currency_type", nullable: false),
-                    amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    amount = table.Column<decimal>(type: "numeric(11,4)", nullable: false),
+                    date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
