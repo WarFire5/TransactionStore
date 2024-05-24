@@ -18,14 +18,6 @@ public class TransactionsController : Controller
         _transactionsService = transactionsService;
     }
 
-    // получаем тип валюты аккаунта по его Id
-    [HttpGet("/currency/{id}")]
-    public ActionResult<CurrencyTypeResponse> GetCurrencyTypeByAccountId(Guid id)
-    {
-        _logger.Information($"Получаем тип валюты аккаунта по его Id {id}.");
-        return Ok(_transactionsService.GetCurrencyTypeByAccountId(id));
-    }
-
     // получаем баланс аккаунта по его Id
     [HttpGet("/balance/{id}")]
     public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)

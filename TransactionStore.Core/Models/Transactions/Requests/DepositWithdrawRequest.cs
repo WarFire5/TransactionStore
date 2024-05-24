@@ -7,5 +7,4 @@ public class DepositWithdrawRequest
     public Guid AccountId { get; set; }
     public CurrencyType CurrencyType { get; set; }
     public int Amount { get; set; }
-    public DateTime Date { get; set; }
 }

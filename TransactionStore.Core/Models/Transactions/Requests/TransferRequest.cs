@@ -9,5 +9,4 @@ public class TransferRequest
     public CurrencyType CurrencyFromType { get; set; }
     public CurrencyType CurrencyToType { get; set; }
     public int Amount { get; set; }
-    public DateTime Date { get; set; }
 }

@@ -14,7 +14,6 @@ public class TransactionStoreContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresEnum<CurrencyType>();
-        modelBuilder.HasPostgresEnum<CurrencyPairType>();
         modelBuilder.HasPostgresEnum<TransactionType>();
     }
 }
