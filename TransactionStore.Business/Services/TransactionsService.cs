@@ -52,24 +52,13 @@ public class TransactionsService : ITransactionsService
         {
             if (request.TransactionType == TransactionType.Deposit)
             {
-                TransactionDto deposit = new TransactionDto()
-                {
-                    AccountId = request.AccountId,
-                    TransactionType = request.TransactionType,
-                    CurrencyType = request.CurrencyType,
-                    Amount = request.Amount
-                };
+                var deposit = _mapper.Map<TransactionDto>(request);
 
                 return _transactionsRepository.AddDepositWithdrawTransaction(deposit);
             }
 
-            TransactionDto withdraw = new TransactionDto()
-            {
-                AccountId = request.AccountId,
-                TransactionType = request.TransactionType,
-                CurrencyType = request.CurrencyType,
-                Amount = request.Amount * -1
-            };
+            var withdraw = _mapper.Map<TransactionDto>(request);
+            withdraw.Amount *= -1;
 
             return _transactionsRepository.AddDepositWithdrawTransaction(withdraw);
         }
@@ -91,17 +80,28 @@ public class TransactionsService : ITransactionsService
                 CurrencyType = request.CurrencyFromType,
                 Amount = request.Amount * -1
             };
+            //var transferWithdraw = _mapper.Map<TransactionDto>(request);
+            //transferWithdraw.TransactionType = TransactionType.Transfer;
+            //transferWithdraw.Amount *= -1;
 
             CurrencyRatesProvider dictionaryOfCoefficients = new CurrencyRatesProvider();
-            var coef = dictionaryOfCoefficients.GetRate(request.CurrencyFromType.ToString(), request.CurrencyToType.ToString());
+
+            var rateToUSD = dictionaryOfCoefficients.GetRateToUsd(request.CurrencyFromType.ToString());
+
+            var amountUsd = request.Amount * rateToUSD;
+
+            var rateFromUsd = dictionaryOfCoefficients.GetRateFromUsd(request.CurrencyToType.ToString());
 
             TransactionDto transferDeposit = new TransactionDto()
             {
                 AccountId = request.AccountToId,
                 TransactionType = TransactionType.Transfer,
                 CurrencyType = request.CurrencyToType,
-                Amount = request.Amount * coef
+                Amount = amountUsd * rateFromUsd
             };
+            //var transferDeposit = _mapper.Map<TransactionDto>(request);
+            //transferDeposit.TransactionType = TransactionType.Transfer;
+            //transferDeposit.Amount = amountUsd * rateFromUsd;
 
             _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
         }

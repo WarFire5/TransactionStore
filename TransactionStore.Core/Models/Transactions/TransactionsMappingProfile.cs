@@ -11,6 +11,20 @@ public class TransactionsMappingProfile : Profile
     {
         CreateMap<DepositWithdrawRequest, TransactionDto>();
         CreateMap<TransferRequest, TransactionDto>();
+        //CreateMap<TransferRequest, TransactionDto>()
+        //    .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountFromId))
+        //    .ForMember(dest => dest.CurrencyType, opt => opt.MapFrom(src => src.CurrencyFromType))
+        //    .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+        //    .ForMember(dest => dest.TransactionType, opt => opt.Ignore())
+        //    .ForMember(dest => dest.Id, opt => opt.Ignore())
+        //    .ReverseMap();
+        //CreateMap<TransferRequest, TransactionDto>()
+        //    .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountToId))
+        //    .ForMember(dest => dest.CurrencyType, opt => opt.MapFrom(src => src.CurrencyToType))
+        //    .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+        //    .ForMember(dest => dest.TransactionType, opt => opt.Ignore())
+        //    .ForMember(dest => dest.Id, opt => opt.Ignore())
+        //    .ReverseMap();
 
         CreateMap<TransactionDto, AccountBalanceResponse>()
             .ForMember(d => d.Balance, opt => opt.MapFrom(s =>s.Amount));

@@ -26,12 +26,21 @@ public class TransactionsController : Controller
         return Ok(_transactionsService.GetBalanceByAccountId(id));
     }
 
-    // добавляем транзакцию на депозит или снятие
-    [HttpPost("/deposit-withdraw")]
-    public ActionResult<Guid> AddDepositWithdrawTransaction([FromBody] DepositWithdrawRequest request)
+    // добавляем транзакцию на депозит
+    [HttpPost("/deposit")]
+    public ActionResult<Guid> AddDepositTransaction([FromBody] DepositWithdrawRequest request)
     {
         _logger.Information(
             $"Для счёта с Id {request.AccountId} добавлена транзакция на пополнение.");
+        return Ok(_transactionsService.AddDepositWithdrawTransaction(request));
+    }
+
+    // добавляем транзакцию на снятие 
+    [HttpPost("/withdraw")]
+    public ActionResult<Guid> AddWithdrawTransaction([FromBody] DepositWithdrawRequest request)
+    {
+        _logger.Information(
+            $"Для счёта с Id {request.AccountId} добавлена транзакция на снятие.");
         return Ok(_transactionsService.AddDepositWithdrawTransaction(request));
     }
 
