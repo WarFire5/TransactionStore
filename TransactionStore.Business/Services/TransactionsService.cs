@@ -44,42 +44,34 @@ public class TransactionsService : ITransactionsService
         return _mapper.Map<AccountBalanceResponse>(accountBalance);
     }
 
-    public Guid AddDepositTransaction(DepositWithdrawRequest request)
+    public Guid AddDepositWithdrawTransaction(DepositWithdrawRequest request)
     {
         var validationResult = _addDepositWithdrawValidator.Validate(request);
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction = new TransactionDto()
+            if (request.TransactionType == TransactionType.Deposit)
+            {
+                TransactionDto deposit = new TransactionDto()
+                {
+                    AccountId = request.AccountId,
+                    TransactionType = request.TransactionType,
+                    CurrencyType = request.CurrencyType,
+                    Amount = request.Amount
+                };
+
+                return _transactionsRepository.AddDepositWithdrawTransaction(deposit);
+            }
+
+            TransactionDto withdraw = new TransactionDto()
             {
                 AccountId = request.AccountId,
-                TransactionType = TransactionType.Deposit,
-                CurrencyType = request.CurrencyType,
-                Amount = request.Amount
-            };
-
-            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
-        }
-
-        string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
-        throw new ValidationException(exceptions);
-    }
-
-    public Guid AddWithdrawTransaction(DepositWithdrawRequest request)
-    {
-        var validationResult = _addDepositWithdrawValidator.Validate(request);
-
-        if (validationResult.IsValid)
-        {
-            TransactionDto transaction = new TransactionDto()
-            {
-                AccountId = request.AccountId,
-                TransactionType = TransactionType.Withdraw,
+                TransactionType = request.TransactionType,
                 CurrencyType = request.CurrencyType,
                 Amount = request.Amount * -1
             };
 
-            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
+            return _transactionsRepository.AddDepositWithdrawTransaction(withdraw);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);

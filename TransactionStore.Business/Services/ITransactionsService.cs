@@ -6,8 +6,7 @@ namespace TransactionStore.Business.Services;
 public interface ITransactionsService
 {
     AccountBalanceResponse GetBalanceByAccountId(Guid id);
-    Guid AddDepositTransaction(DepositWithdrawRequest request);
-    Guid AddWithdrawTransaction(DepositWithdrawRequest request);
+    Guid AddDepositWithdrawTransaction(DepositWithdrawRequest request);
     void AddTransferTransaction(TransferRequest request);
     // TransactionDto GetTransactionById(Guid id);
     // List<TransactionResponse> GetTransactionsByAccountId(Guid accountId);

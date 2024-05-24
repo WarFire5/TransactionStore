@@ -8,10 +8,10 @@ public class AddTransferValidator : AbstractValidator<TransferRequest>
     public AddTransferValidator()
     {
         RuleFor(t => t.AccountFromId)
-            .NotEmpty().WithMessage("Введите GUID.");
+            .NotEmpty().WithMessage("Введите корректный GUID.");
 
         RuleFor(t => t.AccountToId)
-            .NotEmpty().WithMessage("Введите GUID.");
+            .NotEmpty().WithMessage("Введите корректный GUID.");
 
         RuleFor(t => t.CurrencyFromType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")

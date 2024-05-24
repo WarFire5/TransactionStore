@@ -8,7 +8,7 @@ public class AddDepositWithdrawValidator : AbstractValidator<DepositWithdrawRequ
     public AddDepositWithdrawValidator()
     {
         RuleFor(t => t.AccountId)
-            .NotEmpty().WithMessage("Введите GUID.");
+            .NotEmpty().WithMessage("Введите корректный GUID.");
 
         RuleFor(t => t.CurrencyType)
             .NotEmpty().WithMessage("Поле не может быть пустым. Укажите тип валюты.")
