@@ -50,17 +50,22 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            if (request.TransactionType == TransactionType.Deposit)
+            switch (request.TransactionType)
             {
-                var deposit = _mapper.Map<TransactionDto>(request);
+                case TransactionType.Deposit:
+                    var deposit = _mapper.Map<TransactionDto>(request);
 
-                return _transactionsRepository.AddDepositWithdrawTransaction(deposit);
+                    return _transactionsRepository.AddDepositWithdrawTransaction(deposit);
+
+                case TransactionType.Withdraw:
+                    var withdraw = _mapper.Map<TransactionDto>(request);
+                    withdraw.Amount *= -1;
+
+                    return _transactionsRepository.AddDepositWithdrawTransaction(withdraw);
+
+                default:
+                    throw new Core.Exceptions.ValidationException("Тип транзакции должен быть deposit или withdraw.");
             }
-
-            var withdraw = _mapper.Map<TransactionDto>(request);
-            withdraw.Amount *= -1;
-
-            return _transactionsRepository.AddDepositWithdrawTransaction(withdraw);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -73,43 +78,42 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            TransactionDto transferWithdraw = new TransactionDto()
-            {
-                AccountId = request.AccountFromId,
-                TransactionType = TransactionType.Transfer,
-                CurrencyType = request.CurrencyFromType,
-                Amount = request.Amount * -1
-            };
-            //var transferWithdraw = _mapper.Map<TransactionDto>(request);
-            //transferWithdraw.TransactionType = TransactionType.Transfer;
-            //transferWithdraw.Amount *= -1;
-
-            CurrencyRatesProvider dictionaryOfCoefficients = new CurrencyRatesProvider();
-
-            var rateToUSD = dictionaryOfCoefficients.GetRateToUsd(request.CurrencyFromType.ToString());
-
-            var amountUsd = request.Amount * rateToUSD;
-
-            var rateFromUsd = dictionaryOfCoefficients.GetRateFromUsd(request.CurrencyToType.ToString());
-
-            TransactionDto transferDeposit = new TransactionDto()
-            {
-                AccountId = request.AccountToId,
-                TransactionType = TransactionType.Transfer,
-                CurrencyType = request.CurrencyToType,
-                Amount = amountUsd * rateFromUsd
-            };
-            //var transferDeposit = _mapper.Map<TransactionDto>(request);
-            //transferDeposit.TransactionType = TransactionType.Transfer;
-            //transferDeposit.Amount = amountUsd * rateFromUsd;
+            var transferWithdraw = CreateWithdrawTransaction(request);
+            var transferDeposit = CreateDepositTransaction(request);
 
             _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
         }
-
         else
         {
             string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
             throw new ValidationException(exceptions);
         }
+    }
+
+    private TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    {
+        return new TransactionDto
+        {
+            AccountId = request.AccountFromId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyFromType,
+            Amount = request.Amount * -1
+        };
+    }
+
+    private TransactionDto CreateDepositTransaction(TransferRequest request)
+    {
+        var dictionaryOfCoefficients = new CurrencyRatesProvider();
+        var rateToUSD = dictionaryOfCoefficients.GetRateToUsd(request.CurrencyFromType.ToString());
+        var amountUsd = request.Amount * rateToUSD;
+        var rateFromUsd = dictionaryOfCoefficients.GetRateFromUsd(request.CurrencyToType.ToString());
+
+        return new TransactionDto
+        {
+            AccountId = request.AccountToId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyToType,
+            Amount = amountUsd * rateFromUsd
+        };
     }
 }
