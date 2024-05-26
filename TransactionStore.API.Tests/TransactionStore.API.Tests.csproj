@@ -26,6 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionStore.API\TransactionStore.API.csproj" />
+    <ProjectReference Include="..\TransactionStore.Business\TransactionStore.Business.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
