@@ -44,28 +44,31 @@ public class TransactionsService : ITransactionsService
         return _mapper.Map<AccountBalanceResponse>(accountBalance);
     }
 
-    public Guid AddDepositWithdrawTransaction(DepositWithdrawRequest request)
+    public Guid AddDepositWithdrawTransaction(TransactionType transactionType, DepositWithdrawRequest request)
     {
         var validationResult = _addDepositWithdrawValidator.Validate(request);
 
         if (validationResult.IsValid)
         {
-            switch (request.TransactionType)
+            TransactionDto transaction;
+            switch (transactionType)
             {
                 case TransactionType.Deposit:
-                    var deposit = _mapper.Map<TransactionDto>(request);
-
-                    return _transactionsRepository.AddDepositWithdrawTransaction(deposit);
+                    transaction = _mapper.Map<TransactionDto>(request);
+                    break;
 
                 case TransactionType.Withdraw:
-                    var withdraw = _mapper.Map<TransactionDto>(request);
-                    withdraw.Amount *= -1;
-
-                    return _transactionsRepository.AddDepositWithdrawTransaction(withdraw);
+                    transaction = _mapper.Map<TransactionDto>(request);
+                    transaction.Amount *= -1;
+                    break;
 
                 default:
                     throw new Core.Exceptions.ValidationException("Тип транзакции должен быть deposit или withdraw.");
             }
+
+            transaction.TransactionType = transactionType;
+
+            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
+using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Transactions.Requests;
 using TransactionStore.Core.Models.Transactions.Responses;
 
@@ -38,9 +39,8 @@ public class TransactionsController : Controller
 
         _logger.Information(
             $"A deposit transaction has been added for the account with Id {request.AccountId}. / Для счёта с Id {request.AccountId} добавлена транзакция на пополнение.");
-        return Ok(_transactionsService.AddDepositWithdrawTransaction(request));
+        return Ok(_transactionsService.AddDepositWithdrawTransaction(TransactionType.Deposit, request));
     }
-
 
     // добавляем транзакцию на снятие 
     [HttpPost("/withdraw")]
@@ -54,7 +54,7 @@ public class TransactionsController : Controller
 
         _logger.Information(
             $"A withdraw transaction has been added for the account with Id {request.AccountId}. / Для счёта с Id {request.AccountId} добавлена транзакция на снятие.");
-        return Ok(_transactionsService.AddDepositWithdrawTransaction(request));
+        return Ok(_transactionsService.AddDepositWithdrawTransaction(TransactionType.Withdraw, request));
     }
 
     // добавляем транзакцию на трансфер 
