@@ -26,15 +26,17 @@ public class TransactionsService : ITransactionsService
     public AccountBalanceResponse GetBalanceByAccountId(Guid id)
     {
         _logger.Information("Вызываем метод репозитория");
-        List<TransactionDto> transactionDtos = _transactionsRepository.GetBalanceByAccountId(id);
+        List<TransactionDto> transactionDtos = _transactionsRepository.GetTransactionsByAccountId(id);
         var balance = transactionDtos.Sum(t => t.Amount);
 
         _logger.Information("Считаем и передаем баланс");
-        TransactionDto accountBalance = new TransactionDto();
-        accountBalance.Amount = balance;
-        accountBalance.AccountId = transactionDtos[0].AccountId;
-        accountBalance.CurrencyType = transactionDtos[0].CurrencyType;
-
-        return _mapper.Map<AccountBalanceResponse>(accountBalance);
+        AccountBalanceResponse accountBalance = new AccountBalanceResponse()
+        {
+            AccountId = transactionDtos[0].AccountId,
+            Balance = balance,
+            CurrencyType = transactionDtos[0].CurrencyType
+        };
+       
+        return accountBalance;
     }
 }

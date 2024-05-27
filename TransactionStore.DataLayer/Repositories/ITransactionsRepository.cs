@@ -4,5 +4,5 @@ namespace TransactionStore.DataLayer.Repositories;
 
 public interface ITransactionsRepository
 {
-    List<TransactionDto> GetBalanceByAccountId(Guid id);
+    List<TransactionDto> GetTransactionsByAccountId(Guid id);
 }

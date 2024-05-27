@@ -11,6 +11,11 @@ public class TransactionStoreContext : DbContext
     public TransactionStoreContext(DbContextOptions<TransactionStoreContext> options) : base(options)
     {
     }
+
+    public TransactionStoreContext()
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresEnum<CurrencyType>();
