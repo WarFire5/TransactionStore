@@ -6,7 +6,7 @@ namespace TransactionStore.DataLayer;
 
 public class TransactionStoreContext : DbContext
 {
-    public DbSet<TransactionDto> Transactions { get; set; }
+    public virtual DbSet<TransactionDto> Transactions { get; set; }
 
     public TransactionStoreContext(DbContextOptions<TransactionStoreContext> options) : base(options)
     {
