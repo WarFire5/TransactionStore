@@ -9,33 +9,37 @@ namespace TransactionStore.DataLayer.Tests
 {
     public class TransactionsRepositoryTests
     {
-        private readonly Mock<TransactionStoreContext> _transactionStoreContextMock;
+        private readonly Mock<DbSet<TransactionDto>> _transactionsMock;
+        private readonly TransactionStoreContext _transactionStoreContext;
 
         public TransactionsRepositoryTests()
         {
-            _transactionStoreContextMock = new Mock<TransactionStoreContext>();
+            // Создание мокированного списка транзакций
+            var transactions = TestData.GetFakeTransactionDtoList();
+            _transactionsMock = transactions.AsQueryable().BuildMockDbSet();
+
+            // Настройка параметров контекста
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            _transactionStoreContext = new TransactionStoreContext(options);
+            _transactionStoreContext.Transactions = _transactionsMock.Object;
         }
 
         [Fact]
-        public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceieved()
+        public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceived()
         {
-            //arrange
-            var expected = new List<TransactionDto>()
-            {
-            TestData.GetFakeTransactionDtoList()[0],
-            TestData.GetFakeTransactionDtoList()[1],
-            TestData.GetFakeTransactionDtoList()[2]
-            };
-
+            // Arrange
             var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
-            var mock = TestData.GetFakeTransactionDtoList().BuildMock().BuildMockDbSet();
-            _transactionStoreContextMock.Setup(x => x.Transactions).Returns(mock.Object);
-            var sut = new TransactionsRepository(_transactionStoreContextMock.Object);
+            var expected = TestData.GetFakeTransactionDtoList().Where(t => t.AccountId == accountId).ToList();
 
-            //act
-            var actual = sut.GetTransactionsByAccountId(accountId);
+            var sut = new TransactionsRepository(_transactionStoreContext);
 
-            //assert
+            // Act
+            var actual = sut.GetBalanceByAccountId(accountId);
+
+            // Assert
             Assert.NotNull(actual);
             actual.Should().BeEquivalentTo(expected);
         }
