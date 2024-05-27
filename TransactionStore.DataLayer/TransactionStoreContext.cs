@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
@@ -7,7 +7,7 @@ namespace TransactionStore.DataLayer;
 
 public class TransactionStoreContext : DbContext
 {
-    public DbSet<TransactionDto> Transactions { get; set; }
+    public virtual DbSet<TransactionDto> Transactions { get; set; }
 
     public TransactionStoreContext(DbContextOptions<TransactionStoreContext> options) : base(options)
     {
