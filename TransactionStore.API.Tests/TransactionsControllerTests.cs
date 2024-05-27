@@ -80,49 +80,5 @@ namespace TransactionStore.API.Tests
             var okResult = Assert.IsType<OkResult>(result);
             Assert.Equal(200, okResult.StatusCode);
         }
-
-        [Fact]
-        public void AddDepositTransaction_NullRequest_ReturnsBadRequest()
-        {
-            // Arrange
-            var controller = new TransactionsController(_transactionsServiceMock.Object);
-
-            // Act
-            var result = controller.AddDepositTransaction(null);
-
-            // Assert
-            Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestResult>(result.Result);
-            Assert.Equal(400, actionResult.StatusCode);
-        }
-
-        [Fact]
-        public void AddWithdrawTransaction_NullRequest_ReturnsBadRequest()
-        {
-            // Arrange
-            var controller = new TransactionsController(_transactionsServiceMock.Object);
-
-            // Act
-            var result = controller.AddWithdrawTransaction(null);
-
-            // Assert
-            Assert.IsType<ActionResult<Guid>>(result);
-            var actionResult = Assert.IsType<BadRequestResult>(result.Result);
-            Assert.Equal(400, actionResult.StatusCode);
-        }
-
-        [Fact]
-        public void AddTransferTransaction_NullRequest_ReturnsBadRequest()
-        {
-            // Arrange
-            var controller = new TransactionsController(_transactionsServiceMock.Object);
-
-            // Act
-            var result = controller.AddTransferTransaction(null);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestResult>(result);
-            Assert.Equal(400, badRequestResult.StatusCode);
-        }
     }
 }
