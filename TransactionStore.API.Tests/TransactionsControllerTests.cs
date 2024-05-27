@@ -11,11 +11,6 @@ namespace TransactionStore.API.Tests
 {
     public class TransactionsControllerTests
     {
-        private TransactionsController CreateController(Mock<ITransactionsService> mockService)
-        {
-            return new TransactionsController(mockService.Object);
-        }
-
         private readonly Mock<ITransactionsService> _transactionsServiceMock;
 
         public TransactionsControllerTests()
@@ -24,17 +19,17 @@ namespace TransactionStore.API.Tests
         }
 
         [Fact]
-        public void GetBalanceByAccountId_AccountIdSent_OkResultReceieved()
+        public void GetBalanceByAccountId_AccountIdSent_OkResultReceived()
         {
-            //arrange
+            // Arrange
             var accountId = new Guid();
             _transactionsServiceMock.Setup(x => x.GetBalanceByAccountId(accountId)).Returns(new AccountBalanceResponse());
-            var sut = new TransactionsController(_transactionsServiceMock.Object);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
 
-            //act
-            var actual = sut.GetBalanceByAccountId(accountId);
+            // Act
+            var actual = controller.GetBalanceByAccountId(accountId);
 
-            //assert
+            // Assert
             actual.Result.Should().BeOfType<OkObjectResult>();
             _transactionsServiceMock.Verify(m => m.GetBalanceByAccountId(accountId), Times.Once);
         }
@@ -43,17 +38,10 @@ namespace TransactionStore.API.Tests
         public void AddDepositTransaction_ReturnsOk()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
+            _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Deposit, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
 
-            mockService.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Deposit, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
-
-            var request = new DepositWithdrawRequest
-            {
-                AccountId = Guid.NewGuid(),
-                CurrencyType = CurrencyType.USD,
-                Amount = 100
-            };
+            var request = TransactionsControllerTestData.GetDepositRequest();
 
             // Act
             var result = controller.AddDepositTransaction(request);
@@ -66,17 +54,10 @@ namespace TransactionStore.API.Tests
         public void AddWithdrawTransaction_ReturnsOk()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
+            _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Withdraw, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
 
-            mockService.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Withdraw, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
-
-            var request = new DepositWithdrawRequest
-            {
-                AccountId = Guid.NewGuid(),
-                CurrencyType = CurrencyType.USD,
-                Amount = 100
-            };
+            var request = TransactionsControllerTestData.GetWithdrawRequest();
 
             // Act
             var result = controller.AddWithdrawTransaction(request);
@@ -89,17 +70,8 @@ namespace TransactionStore.API.Tests
         public void AddTransferTransaction_ReturnsOk()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
-
-            var request = new TransferRequest
-            {
-                AccountFromId = Guid.NewGuid(),
-                AccountToId = Guid.NewGuid(),
-                CurrencyFromType = CurrencyType.USD,
-                CurrencyToType = CurrencyType.EUR,
-                Amount = 100
-            };
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
+            var request = TransactionsControllerTestData.GetTransferRequest();
 
             // Act
             var result = controller.AddTransferTransaction(request);
@@ -113,8 +85,7 @@ namespace TransactionStore.API.Tests
         public void AddDepositTransaction_NullRequest_ReturnsBadRequest()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
 
             // Act
             var result = controller.AddDepositTransaction(null);
@@ -129,8 +100,7 @@ namespace TransactionStore.API.Tests
         public void AddWithdrawTransaction_NullRequest_ReturnsBadRequest()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
 
             // Act
             var result = controller.AddWithdrawTransaction(null);
@@ -145,8 +115,7 @@ namespace TransactionStore.API.Tests
         public void AddTransferTransaction_NullRequest_ReturnsBadRequest()
         {
             // Arrange
-            var mockService = new Mock<ITransactionsService>();
-            var controller = CreateController(mockService);
+            var controller = new TransactionsController(_transactionsServiceMock.Object);
 
             // Act
             var result = controller.AddTransferTransaction(null);

@@ -15,7 +15,7 @@ namespace TransactionStore.DataLayer.Tests
         public TransactionsRepositoryTests()
         {
             // Создание мокированного списка транзакций
-            var transactions = TestData.GetFakeTransactionDtoList();
+            var transactions = TransactionsRepositoryTestData.GetFakeTransactionDtoList();
             _transactionsMock = transactions.AsQueryable().BuildMockDbSet();
 
             // Настройка параметров контекста
@@ -32,7 +32,7 @@ namespace TransactionStore.DataLayer.Tests
         {
             // Arrange
             var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
-            var expected = TestData.GetFakeTransactionDtoList().Where(t => t.AccountId == accountId).ToList();
+            var expected = TransactionsRepositoryTestData.GetFakeTransactionDtoList().Where(t => t.AccountId == accountId).ToList();
 
             var sut = new TransactionsRepository(_transactionStoreContext);
 

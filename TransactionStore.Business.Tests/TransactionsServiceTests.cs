@@ -1,4 +1,4 @@
-namespace TransactionStore.Business.Tests.Services;
+namespace TransactionStore.Business.Tests;
 
 public class TransactionsServiceTests
 {
