@@ -9,19 +9,19 @@ public static class TestData
         [
         new()
         {
-            AccountId = new Guid("08006bdf-86de-492a-8b09-5b4833acadea"),
+            AccountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1"),
             CurrencyType = CurrencyType.RUB,
             Amount = 1000,
         },
         new()
         {
-            AccountId = new Guid("08006bdf-86de-492a-8b09-5b4833acadea"),
+            AccountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1"),
             CurrencyType = CurrencyType.RUB,
             Amount = -1000,
         },
         new()
         {
-            AccountId = new Guid("08006bdf-86de-492a-8b09-5b4833acadea"),
+            AccountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1"),
             CurrencyType = CurrencyType.RUB,
             Amount = 500,
         }

@@ -26,7 +26,7 @@ namespace TransactionStore.DataLayer.Tests
             TestData.GetFakeTransactionDtoList()[2]
             };
 
-            var accountId = new Guid("78fa8b9b-91fa-4e94-9a35-33d356d92894");
+            var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
             var mock = TestData.GetFakeTransactionDtoList().BuildMock().BuildMockDbSet();
             _transactionStoreContextMock.Setup(x=>x.Transactions).Returns(mock.Object);
             var sut = new TransactionsRepository(_transactionStoreContextMock.Object);
