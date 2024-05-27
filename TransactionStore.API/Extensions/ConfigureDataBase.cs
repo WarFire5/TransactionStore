@@ -7,7 +7,6 @@ namespace TransactionStore.API.Extensions;
 
 public static class DataBaseExtensions
 {
-    [Obsolete]
     public static void ConfigureDataBase(this IServiceCollection services, ConfigurationManager configurationManager)
     {
         var connectionString = configurationManager.GetConnectionString("TsConnection");
