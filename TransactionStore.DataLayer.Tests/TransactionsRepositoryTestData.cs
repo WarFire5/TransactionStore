@@ -3,7 +3,7 @@ using TransactionStore.Core.Enums;
 
 namespace TransactionStore.DataLayer.Tests;
 
-public static class TestData
+public static class TransactionsRepositoryTestData
 {
     public static List<TransactionDto> GetFakeTransactionDtoList() =>
         [
