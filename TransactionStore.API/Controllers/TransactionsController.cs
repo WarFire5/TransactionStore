@@ -17,10 +17,10 @@ public class TransactionsController : Controller
         _transactionsService = transactionsService;
     }
 
-    [HttpGet("/balance/{id}")]
-    public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
+    [HttpGet("{id}")]
+    public ActionResult <List<TransactionsByAccountIdResponse>> GetTransactionsByAccountId(Guid id)
     {
-        _logger.Information($"Получаем баланс аккаунта {id}");
-        return Ok(_transactionsService.GetBalanceByAccountId(id));
+        _logger.Information($"Получаем транзакции аккаунта {id}");
+        return Ok(_transactionsService.GetTransactionsByAccountId(id));
     }
 }
