@@ -41,4 +41,21 @@ public class TransactionsRepositoryTests
         Assert.NotNull(actual);
         actual.Should().BeEquivalentTo(expected);
     }
+
+    [Fact]
+    public void GetTransactionsByLeadId_GuidSent_ListTransactionsDtoReceived()
+    {
+        // Arrange
+        var id = new Guid("550df504-032e-4ef7-aee2-53cf66e4d0c8");
+        var expected = TransactionsRepositoryTestData.GetFakeFullTransactionDtoList().Where(t => t.Id == id).ToList();
+
+        var sut = new TransactionsRepository(_transactionStoreContext);
+
+        // Act
+        var actual = sut.GetTransactionsByLeadId(id);
+
+        // Assert
+        Assert.NotNull(actual);
+        actual.Should().BeEquivalentTo(expected);
+    }
 }

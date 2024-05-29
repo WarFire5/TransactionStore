@@ -17,18 +17,18 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public void GetTransactionsByAccountId_AccountIdSent_OkResultReceieved()
+    public void GetTransactionsByLeadId_IdSent_OkResultReceieved()
     {
         //arrange
-        var accountId = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountId(accountId)).Returns(new List<TransactionsByAccountIdResponse>());
+        var id = new Guid();
+        _transactionsServiceMock.Setup(x => x.GetTransactionsByLeadId(id)).Returns(new List<TransactionsByLeadIdResponse>());
         var sut = new TransactionsController(_transactionsServiceMock.Object);
 
         //act
-        var actual = sut.GetTransactionsByAccountId(accountId);
+        var actual = sut.GetTransactionsByLeadId(id);
 
         //assert
         actual.Result.Should().BeOfType<OkObjectResult>();
-        _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountId(accountId), Times.Once);
+        _transactionsServiceMock.Verify(m => m.GetTransactionsByLeadId(id), Times.Once);
     }
 }

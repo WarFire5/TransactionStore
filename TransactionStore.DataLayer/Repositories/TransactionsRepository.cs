@@ -16,4 +16,10 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _logger.Information($"Ищем в базе транзакции аккаунта {id}");
         return _ctx.Transactions.Where(t=>t.AccountId==id).ToList();
     }
+
+    public List<TransactionDto> GetTransactionsByLeadId(Guid id)
+    {
+        _logger.Information($"Ищем в базе транзакции лида {id}");
+        return _ctx.Transactions.Where(t => t.Id == id).ToList();
+    }
 }

@@ -23,4 +23,11 @@ public class AccountsController: Controller
         _logger.Information($"Получаем баланс аккаунта {id}");
         return Ok(_transactionsService.GetBalanceByAccountId(id));
     }
+
+    [HttpGet("/transactions/{id}")]
+    public ActionResult<List<TransactionsByAccountIdResponse>> GetTransactionsByAccountId(Guid id)
+    {
+        _logger.Information($"Получаем транзакции аккаунта {id}");
+        return Ok(_transactionsService.GetTransactionsByAccountId(id));
+    }
 }

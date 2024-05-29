@@ -31,4 +31,20 @@ public class AccountsControllerTests
         actual.Result.Should().BeOfType<OkObjectResult>();
         _transactionsServiceMock.Verify(m => m.GetBalanceByAccountId(accountId), Times.Once);
     }
+
+    [Fact]
+    public void GetTransactionsByAccountId_AccountIdSent_OkResultReceieved()
+    {
+        //arrange
+        var accountId = new Guid();
+        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountId(accountId)).Returns(new List<TransactionsByAccountIdResponse>());
+        var sut = new AccountsController(_transactionsServiceMock.Object);
+
+        //act
+        var actual = sut.GetTransactionsByAccountId(accountId);
+
+        //assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountId(accountId), Times.Once);
+    }
 }

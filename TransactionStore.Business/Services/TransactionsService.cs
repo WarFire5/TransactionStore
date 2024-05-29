@@ -46,4 +46,11 @@ public class TransactionsService : ITransactionsService
         List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
         return _mapper.Map<List<TransactionsByAccountIdResponse>>(transactions);
     }
+
+    public List<TransactionsByLeadIdResponse> GetTransactionsByLeadId(Guid id)
+    {
+        _logger.Information("Вызываем метод репозитория");
+        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByLeadId(id);
+        return _mapper.Map<List<TransactionsByLeadIdResponse>>(transactions);
+    }
 }

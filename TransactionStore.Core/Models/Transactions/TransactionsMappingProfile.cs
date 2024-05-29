@@ -9,5 +9,6 @@ public class TransactionsMappingProfile : Profile
     public TransactionsMappingProfile()
     {
         CreateMap<TransactionDto, TransactionsByAccountIdResponse>();
+        CreateMap<TransactionDto, TransactionsByLeadIdResponse>();
     }
 }
