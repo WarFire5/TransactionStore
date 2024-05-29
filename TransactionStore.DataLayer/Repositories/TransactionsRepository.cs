@@ -1,5 +1,7 @@
 ﻿using Serilog;
+using TransactionStore.Core.Constants.Exceptions;
 using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Exceptions;
 
 namespace TransactionStore.DataLayer.Repositories;
 
@@ -13,12 +15,20 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
     public List<TransactionDto> GetTransactionsByAccountId(Guid id)
     {
+        if (!_ctx.Database.CanConnect())
+        {
+            throw new ServiceUnavailableException(RepositoryExceptions.ServiceUnavailable);
+        }
         _logger.Information($"Ищем в базе транзакции аккаунта {id}");
-        return _ctx.Transactions.Where(t=>t.AccountId==id).ToList();
+        return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
     }
 
     public List<TransactionDto> GetTransactionsByLeadId(Guid id)
     {
+        if (!_ctx.Database.CanConnect())
+        {
+            throw new ServiceUnavailableException(RepositoryExceptions.ServiceUnavailable);
+        }
         _logger.Information($"Ищем в базе транзакции лида {id}");
         return _ctx.Transactions.Where(t => t.Id == id).ToList();
     }

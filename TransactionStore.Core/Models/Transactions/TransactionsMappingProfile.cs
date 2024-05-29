@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Models.Transactions.Responses;
 
 namespace TransactionStore.Core.Models.Transactions;
 

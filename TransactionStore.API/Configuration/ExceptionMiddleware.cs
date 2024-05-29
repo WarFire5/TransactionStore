@@ -25,6 +25,11 @@ public class ExceptionMiddleware
             _logger.Error("Ошибка валидации / Validation error: {message}", ex.Message);
             await HandleValidationExceptionAsync(httpContext, ex);
         }
+        catch (ServiceUnavailableException ex)
+        {
+            _logger.Error($"Ошибка {ex.Message}");
+            await HandleServiceUnavailableExceptionAsync(httpContext, ex);
+        }
         catch (Exception ex)
         {
             _logger.Error($"Something went wrong: {ex}");
@@ -51,6 +56,18 @@ public class ExceptionMiddleware
         {
             StatusCode = context.Response.StatusCode,
             Message = exception.Message,
+        }.ToString());
+    }
+
+    private async Task HandleServiceUnavailableExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+
+        await context.Response.WriteAsync(new ErrorDetails()
+        {
+            StatusCode = context.Response.StatusCode,
+            Message = exception.Message
         }.ToString());
     }
 }
