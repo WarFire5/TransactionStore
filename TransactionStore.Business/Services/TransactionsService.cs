@@ -52,20 +52,18 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction;
+            TransactionDto transaction = _mapper.Map<TransactionDto>(request);
             switch (transactionType)
             {
                 case TransactionType.Deposit:
-                    transaction = _mapper.Map<TransactionDto>(request);
                     break;
 
                 case TransactionType.Withdraw:
-                    transaction = _mapper.Map<TransactionDto>(request);
                     transaction.Amount *= -1;
                     break;
 
                 default:
-                    throw new Core.Exceptions.ValidationException("Тип транзакции должен быть deposit или withdraw.");
+                    throw new Core.Exceptions.ValidationException("The transaction type must be deposit or withdrawal. / Тип транзакции должен быть deposit или withdraw.");
             }
 
             transaction.TransactionType = transactionType;
@@ -108,10 +106,10 @@ public class TransactionsService : ITransactionsService
 
     private TransactionDto CreateDepositTransaction(TransferRequest request)
     {
-        var dictionaryOfCoefficients = new CurrencyRatesProvider();
-        var rateToUSD = dictionaryOfCoefficients.GetRateToUsd(request.CurrencyFromType.ToString());
+        var currencyRatesProvider = new CurrencyRatesProvider();
+        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
         var amountUsd = request.Amount * rateToUSD;
-        var rateFromUsd = dictionaryOfCoefficients.GetRateFromUsd(request.CurrencyToType.ToString());
+        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
 
         return new TransactionDto
         {

@@ -1,44 +1,47 @@
-namespace TransactionStore.Core.Data;
-
-public class CurrencyRatesProvider
+namespace TransactionStore.Core.Data
 {
-    private readonly Dictionary<string, decimal> _rate;
-
-    public CurrencyRatesProvider()
+    public class CurrencyRatesProvider
     {
-        _rate = new Dictionary<string, decimal>()
+        private readonly Dictionary<string, decimal> _rates;
+
+        public CurrencyRatesProvider()
         {
-            { "USDUSD", 1m },
+            _rates = new Dictionary<string, decimal>()
+            {
+                { "USD", 1m },
+                { "RUB", 0.011m },
+                { "EUR", 1.09m },
+                { "JPY", 0.0064m },
+                { "CNY", 0.14m },
+                { "RSD", 0.0093m },
+                { "BGN", 0.56m },
+                { "ARS", 0.0011m }
+            };
+        }
 
-            { "RUBUSD", 0.011m },
-            { "EURUSD", 1.09m },
-            { "JPYUSD", 0.0064m },
-            { "CNYUSD", 0.14m },
-            { "RSDUSD", 0.0093m },
-            { "BGNUSD", 0.56m },
-            { "ARSUSD", 0.0011m },
+        private string ConvertCurrencyEnumToString(Enum currencyEnum)
+        {
+            return currencyEnum.ToString().ToUpper();
+        }
 
-            { "USDRUB", 90.89m },
-            { "USDEUR", 0.92m },
-            { "USDJPY", 155.66m },
-            { "USDCNY", 7.22m },
-            { "USDRSD", 107.50m },
-            { "USDBGN", 1.80m },
-            { "USDARS", 883.67m }
-        };
-    }
+        public decimal ConvertFirstCurrencyToUsd(Enum currencyEnum)
+        {
+            var currency = ConvertCurrencyEnumToString(currencyEnum);
+            if (_rates.TryGetValue(currency, out var rateToUsd))
+            {
+                return rateToUsd;
+            }
+            throw new ArgumentException($"Rate for {currency} to USD not found. /  урс USD к {currency} не найден.");
+        }
 
-    public decimal GetRateToUsd(string currency)
-    {
-        currency = currency.ToUpper();
-
-        return _rate[currency + "USD"];
-    }
-
-    public decimal GetRateFromUsd(string currency)
-    {
-        currency = currency.ToUpper();
-
-        return _rate["USD" + currency];
+        public decimal ConvertUsdToSecondCurrency(Enum currencyEnum)
+        {
+            var currency = ConvertCurrencyEnumToString(currencyEnum);
+            if (_rates.TryGetValue(currency, out var rateToUsd))
+            {
+                return 1 / rateToUsd;
+            }
+            throw new ArgumentException($"Rate for USD to {currency} not found. /  урс USD к {currency} не найден.");
+        }
     }
 }
