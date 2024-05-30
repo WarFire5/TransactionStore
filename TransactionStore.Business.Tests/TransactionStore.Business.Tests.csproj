@@ -26,6 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransactionStore.Business\TransactionStore.Business.csproj" />
+    <ProjectReference Include="..\TransactionStore.Core\TransactionStore.Core.csproj" />
+    <ProjectReference Include="..\TransactionStore.DataLayer\TransactionStore.DataLayer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
