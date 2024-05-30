@@ -1,42 +1,61 @@
-using Moq;
+﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
-using TransactionStore.DataLayer.Repositories;
+using Moq;
 using TransactionStore.Core.DTOs;
-using FluentAssertions;
+using TransactionStore.DataLayer.Repositories;
 
-namespace TransactionStore.DataLayer.Tests
+namespace TransactionStore.DataLayer.Tests;
+
+public class TransactionsRepositoryTests
 {
-    public class TransactionsRepositoryTests
+    private readonly Mock<DbSet<TransactionDto>> _transactionsMock;
+    private readonly TransactionStoreContext _transactionStoreContext;
+
+    public TransactionsRepositoryTests()
     {
-        private readonly Mock<TransactionStoreContext> _transactionStoreContextMock;
+        var transactions = TransactionsRepositoryTestData.GetFakeTransactionDtoList();
+        _transactionsMock = transactions.AsQueryable().BuildMockDbSet();
 
-        public TransactionsRepositoryTests()
-        {
-            _transactionStoreContextMock = new Mock<TransactionStoreContext>();
-        }
+        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+            .UseInMemoryDatabase(databaseName: "TestDatabase")
+            .Options;
 
-        [Fact]
-        public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceieved()
-        {
-            //arrange
-            var expected = new List<TransactionDto>()
-            {
-            TestData.GetFakeTransactionDtoList()[0],
-            TestData.GetFakeTransactionDtoList()[1],
-            TestData.GetFakeTransactionDtoList()[2]
-            };
+        _transactionStoreContext = new TransactionStoreContext(options);
+        _transactionStoreContext.Transactions = _transactionsMock.Object;
+    }
 
-            var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
-            var mock = TestData.GetFakeTransactionDtoList().BuildMock().BuildMockDbSet();
-            _transactionStoreContextMock.Setup(x=>x.Transactions).Returns(mock.Object);
-            var sut = new TransactionsRepository(_transactionStoreContextMock.Object);
+    [Fact]
+    public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceived()
+    {
+        // Arrange
+        var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
+        var expected = TransactionsRepositoryTestData.GetFakeTransactionDtoList().Where(t => t.AccountId == accountId).ToList();
 
-            //act
-            var actual = sut.GetTransactionsByAccountId(accountId);
+        var sut = new TransactionsRepository(_transactionStoreContext);
 
-            //assert
-            Assert.NotNull(actual);
-            actual.Should().BeEquivalentTo(expected);
-        }
+        // Act
+        var actual = sut.GetTransactionsByAccountId(accountId);
+
+        // Assert
+        Assert.NotNull(actual);
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void GetTransactionsByLeadId_GuidSent_ListTransactionsDtoReceived()
+    {
+        // Arrange
+        var id = new Guid("550df504-032e-4ef7-aee2-53cf66e4d0c8");
+        var expected = TransactionsRepositoryTestData.GetFakeFullTransactionDtoList().Where(t => t.Id == id).ToList();
+
+        var sut = new TransactionsRepository(_transactionStoreContext);
+
+        // Act
+        var actual = sut.GetTransactionsByLeadId(id);
+
+        // Assert
+        Assert.NotNull(actual);
+        actual.Should().BeEquivalentTo(expected);
     }
 }
