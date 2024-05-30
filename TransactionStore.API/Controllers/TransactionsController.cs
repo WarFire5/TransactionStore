@@ -17,7 +17,7 @@ public class TransactionsController : Controller
         _transactionsService = transactionsService;
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("byLead{id}")]
     public ActionResult<List<TransactionsByLeadIdResponse>> GetTransactionsByLeadId(Guid id)
     {
         _logger.Information($"Получаем транзакции лида {id}");
