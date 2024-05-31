@@ -17,7 +17,7 @@ public class AccountsController: Controller
         _transactionsService = transactionsService;
     }
 
-    [HttpGet("/balance/{id}")]
+    [HttpGet("/api/accounts/balance/{id}")]
     public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Получаем баланс аккаунта {id}");
