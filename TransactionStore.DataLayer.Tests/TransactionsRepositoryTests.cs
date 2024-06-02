@@ -1,7 +1,5 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using MockQueryable.Moq;
-using Moq;
 using TransactionStore.Core.DTOs;
 using TransactionStore.DataLayer.Repositories;
 
@@ -14,32 +12,142 @@ public class TransactionsRepositoryTests
 
     public TransactionsRepositoryTests()
     {
-        var transactions = TransactionsRepositoryTestData.GetFakeTransactionDtoList();
-        _transactionsMock = transactions.AsQueryable().BuildMockDbSet();
+        private readonly TransactionStoreContext _transactionStoreContext;
 
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
+        public TransactionsRepositoryTests()
+        {
+            // ��������� ���������� ���������
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-        _transactionStoreContext = new TransactionStoreContext(options);
-        _transactionStoreContext.Transactions = _transactionsMock.Object;
-    }
+            _transactionStoreContext = new TransactionStoreContext(options);
+        }
 
-    [Fact]
-    public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceived()
-    {
-        // Arrange
-        var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
-        var expected = TransactionsRepositoryTestData.GetFakeTransactionDtoList().Where(t => t.AccountId == accountId).ToList();
+        [Fact]
+        public void GetTransactionsByAccountId_GuidSent_ListTransactionsDtoReceived()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-        var sut = new TransactionsRepository(_transactionStoreContext);
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+                var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
 
-        // Act
-        var actual = sut.GetTransactionsByAccountId(accountId);
+                var transaction = new TransactionDto { AccountId = accountId, Amount = 100 };
+                context.Transactions.Add(transaction);
+                context.SaveChanges();
 
-        // Assert
-        Assert.NotNull(actual);
-        actual.Should().BeEquivalentTo(expected);
+                var expected = new List<TransactionDto>() { transaction };
+
+                // Act
+                var result = repository.GetBalanceByAccountId(accountId);
+
+                // Assert
+                Assert.NotNull(result);
+                result.Should().BeEquivalentTo(expected);
+            }
+        }
+
+        [Fact]
+        public void AddDepositWithdrawTransaction_ValidTransaction_ReturnsId()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+                var transaction = new TransactionDto { Id = Guid.NewGuid() };
+
+                // Act
+                var result = repository.AddDepositWithdrawTransaction(transaction);
+
+                // Assert
+                Assert.Equal(transaction.Id, result);
+            }
+        }
+
+        [Fact]
+        public void AddTransferTransaction_ValidTransactions_NoExceptionsThrown()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+                var transferWithdraw = new TransactionDto { Id = Guid.NewGuid() };
+                var transferDeposit = new TransactionDto { Id = Guid.NewGuid() };
+
+                // Act
+                repository.AddTransferTransaction(transferWithdraw, transferDeposit);
+
+                //Assert
+                var result = context.Transactions.ToList();
+                result.Count.Should().Be(2);
+            }
+        }
+
+        [Fact]
+        public void AddDepositWithdrawTransaction_NullTransaction_ThrowsException()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+
+                // Act & Assert
+                Assert.Throws<ArgumentNullException>(() => repository.AddDepositWithdrawTransaction(null));
+            }
+        }
+
+        [Fact]
+        public void AddTransferTransaction_NullTransferWithdraw_ThrowsException()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+                var transferDeposit = new TransactionDto { Id = Guid.NewGuid() };
+
+                // Act & Assert
+                Assert.Throws<ArgumentNullException>(() => repository.AddTransferTransaction(null, transferDeposit));
+            }
+        }
+
+        [Fact]
+        public void AddTransferTransaction_NullTransferDeposit_ThrowsException()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<TransactionStoreContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new TransactionStoreContext(options))
+            {
+                var repository = new TransactionsRepository(context);
+                var transferWithdraw = new TransactionDto { Id = Guid.NewGuid() };
+
+                // Act & Assert
+                Assert.Throws<ArgumentNullException>(() => repository.AddTransferTransaction(transferWithdraw, null));
+            }
+        }
     }
 
     [Fact]

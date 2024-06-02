@@ -363,4 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 .idea/.idea.Backend/.idea/
 .idea/.idea.TransactionStore/.idea/
-/TransactionStore.API/Properties/launchSettings.json
+
+TransactionStore.API/Properties/launchSettings.json

@@ -1,6 +1,6 @@
-﻿using TransactionStore.Core.Exceptions;
 using Serilog;
 using System.Net;
+using TransactionStore.Core.Exceptions;
 
 namespace TransactionStore.API.Configuration;
 
@@ -25,6 +25,11 @@ public class ExceptionMiddleware
             _logger.Error("Ошибка валидации / Validation error: {message}", ex.Message);
             await HandleValidationExceptionAsync(httpContext, ex);
         }
+        catch (NotFoundException ex)
+        {
+            _logger.Error("Контент не найден / Content not found error: {message}", ex.Message);
+            await HandleNotFoundExceptionAsync(httpContext, ex);
+        }
         catch (ServiceUnavailableException ex)
         {
             _logger.Error($"Ошибка {ex.Message}");
@@ -41,6 +46,17 @@ public class ExceptionMiddleware
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+        await context.Response.WriteAsync(new ErrorDetails()
+        {
+            StatusCode = context.Response.StatusCode,
+            Message = exception.Message,
+        }.ToString());
+    }
+
+    private async Task HandleNotFoundExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         await context.Response.WriteAsync(new ErrorDetails()
         {
             StatusCode = context.Response.StatusCode,

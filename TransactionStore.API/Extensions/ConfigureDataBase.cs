@@ -1,7 +1,7 @@
-﻿using TransactionStore.Core.Enums;
-using TransactionStore.DataLayer;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TransactionStore.Core.Enums;
+using TransactionStore.DataLayer;
 
 namespace TransactionStore.API.Extensions;
 
@@ -21,7 +21,6 @@ public static class DataBaseExtensions
         );
 
         NpgsqlConnection.GlobalTypeMapper.MapEnum<CurrencyType>();
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<CurrencyPairType>();
         NpgsqlConnection.GlobalTypeMapper.MapEnum<TransactionType>();
     }
 

@@ -1,10 +1,13 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FluentValidation;
 using Serilog;
+using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Transactions.Requests;
 using TransactionStore.Core.Models.Transactions.Responses;
 using TransactionStore.DataLayer.Repositories;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
@@ -13,14 +16,17 @@ public class TransactionsService : ITransactionsService
     private readonly ITransactionsRepository _transactionsRepository;
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
     private readonly IMapper _mapper;
-    private readonly IValidator<AddTransactionRequest> _addTransactionValidator;
+    private readonly IValidator<DepositWithdrawRequest> _addDepositWithdrawValidator;
+    private readonly IValidator<TransferRequest> _addTransferValidator;
 
-    public TransactionsService(ITransactionsRepository usersRepository, IMapper mapper
-           , IValidator<AddTransactionRequest> addTransactionValidator)
+    public TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
+        IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
+        IValidator<TransferRequest> addTransferValidator)
     {
-        _transactionsRepository = usersRepository;
+        _transactionsRepository = transactionsRepository;
         _mapper = mapper;
-        _addTransactionValidator = addTransactionValidator;
+        _addDepositWithdrawValidator = addDepositWithdrawValidator;
+        _addTransferValidator = addTransferValidator;
     }
 
     public AccountBalanceResponse GetBalanceByAccountId(Guid id)
@@ -52,5 +58,79 @@ public class TransactionsService : ITransactionsService
         _logger.Information("Вызываем метод репозитория");
         List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByLeadId(id);
         return _mapper.Map<List<TransactionsByLeadIdResponse>>(transactions);
+    }
+
+    public Guid AddDepositWithdrawTransaction(TransactionType transactionType, DepositWithdrawRequest request)
+    {
+        var validationResult = _addDepositWithdrawValidator.Validate(request);
+
+        if (validationResult.IsValid)
+        {
+            TransactionDto transaction = _mapper.Map<TransactionDto>(request);
+            switch (transactionType)
+            {
+                case TransactionType.Deposit:
+                    break;
+
+                case TransactionType.Withdraw:
+                    transaction.Amount *= -1;
+                    break;
+
+                default:
+                    throw new Core.Exceptions.ValidationException("The transaction type must be deposit or withdrawal. / Тип транзакции должен быть deposit или withdraw.");
+            }
+
+            transaction.TransactionType = transactionType;
+
+            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
+        }
+
+        string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
+        throw new ValidationException(exceptions);
+    }
+
+    public void AddTransferTransaction(TransferRequest request)
+    {
+        var validationResult = _addTransferValidator.Validate(request);
+
+        if (validationResult.IsValid)
+        {
+            var transferWithdraw = CreateWithdrawTransaction(request);
+            var transferDeposit = CreateDepositTransaction(request);
+
+            _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+        }
+        else
+        {
+            string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
+            throw new ValidationException(exceptions);
+        }
+    }
+
+    private TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    {
+        return new TransactionDto
+        {
+            AccountId = request.AccountFromId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyFromType,
+            Amount = request.Amount * -1
+        };
+    }
+
+    private TransactionDto CreateDepositTransaction(TransferRequest request)
+    {
+        var currencyRatesProvider = new CurrencyRatesProvider();
+        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
+        var amountUsd = request.Amount * rateToUSD;
+        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
+
+        return new TransactionDto
+        {
+            AccountId = request.AccountToId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyToType,
+            Amount = amountUsd * rateFromUsd
+        };
     }
 }

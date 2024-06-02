@@ -13,7 +13,7 @@ using TransactionStore.DataLayer;
 namespace TransactionStore.DataLayer.Migrations
 {
     [DbContext(typeof(TransactionStoreContext))]
-    [Migration("20240521154055_CreatedDataBase")]
+    [Migration("20240524183922_CreatedDataBase")]
     partial class CreatedDataBase
     {
         /// <inheritdoc />
@@ -24,7 +24,6 @@ namespace TransactionStore.DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "currency_pair_type", new[] { "unknown", "rubusd", "rubeur", "rubjpy", "rubcny", "rubrsd", "rubbgn", "rubars", "usdrub", "usdeur", "usdjpy", "usdcny", "usdrsd", "usdbgn", "usdars", "eurrub", "eurusd", "eurjpy", "eurcny", "eurrsd", "eurbgn", "eurars", "jpyrub", "jpyusd", "jpyeur", "jpycny", "jpyrsd", "jpybgn", "jpyars", "cnyrub", "cnyusd", "cnyeur", "cnyjpy", "cnyrsd", "cnybgn", "cnyars", "rsdrub", "rsdusd", "rsdeur", "rsdjpy", "rsdcny", "rsdbgn", "rsdars", "bgnrub", "bgnusd", "bgneur", "bgnjpy", "bgncny", "bgnrsd", "bgnars", "arsrub", "arsusd", "arseur", "arsjpy", "arscny", "arsrsd", "arsbgn" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "currency_type", new[] { "unknown", "rub", "usd", "eur", "jpy", "cny", "rsd", "bgn", "ars" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "transaction_type", new[] { "unknown", "deposit", "withdraw", "transfer" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -40,8 +39,8 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("account_id");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer")
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(11, 4)")
                         .HasColumnName("amount");
 
                     b.Property<CurrencyType>("CurrencyType")
@@ -49,8 +48,10 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnName("currency_type");
 
                     b.Property<DateTime>("Date")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
+                        .HasColumnName("date")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<TransactionType>("TransactionType")
                         .HasColumnType("transaction_type")

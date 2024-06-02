@@ -1,4 +1,4 @@
-﻿using TransactionStore.API.Filters;
+using TransactionStore.API.Filters;
 using TransactionStore.Core.Models.Transactions;
 
 namespace TransactionStore.API.Extensions;
