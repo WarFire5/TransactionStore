@@ -19,14 +19,6 @@ public class TransactionsController : Controller
         _transactionsService = transactionsService;
     }
 
-    // получаем баланс аккаунта по его Id
-    [HttpGet("/balance/{id}")]
-    public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
-    {
-        _logger.Information($"Получаем баланс аккаунта по его Id {id}.");
-        return Ok(_transactionsService.GetBalanceByAccountId(id));
-    }
-
     // добавляем транзакцию на депозит
     [HttpPost("/deposit")]
     public ActionResult<Guid> AddDepositTransaction([FromBody] DepositWithdrawRequest request)
@@ -53,5 +45,13 @@ public class TransactionsController : Controller
             $"A transfer transaction from an account with Id {request.AccountFromId} to an account with Id {request.AccountToId} has been added into the database. / Транзакция на перевод со счёта с Id {request.AccountFromId} на счёт с Id {request.AccountToId} добавлена в базу данных.");
         _transactionsService.AddTransferTransaction(request);
         return Ok();
+    }
+
+    // получаем список транзакций по accountId
+    [HttpGet("/by-{accountId}")]
+    public ActionResult<List<TransactionResponse>> GetTransactionsByAccountId(Guid accountId)
+    {
+        _logger.Information($"Getting the account transactions by accountId {accountId}. / Получаем список транзакций по accountId {accountId}.");
+        return Ok(_transactionsService.GetTransactionsByAccountId(accountId));
     }
 }

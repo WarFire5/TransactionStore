@@ -1,5 +1,4 @@
 using Serilog;
-using TransactionStore.Core.Constants.Exceptions;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
 
@@ -19,19 +18,19 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
     public List<TransactionDto> GetBalanceByAccountId(Guid id)
     {
-        _logger.Information($"Ищем в базе транзакции аккаунта с Id {id}.");
+        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
         return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
     }
 
     public List<TransactionDto> GetTransactionsByAccountId(Guid id)
     {
-        _logger.Information($"Ищем в базе транзакции аккаунта с Id {id}.");
+        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
         return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
     }
 
     public List<TransactionDto> GetTransactionsByLeadId(Guid id)
     {
-        _logger.Information($"Ищем в базе транзакции лида {id}");
+        _logger.Information($"Looking for transactions by leadId {id} in the database. / Ищем в базе транзакции лида с Id {id}.");
         return _ctx.Transactions.Where(t => t.Id == id).ToList();
     }
 

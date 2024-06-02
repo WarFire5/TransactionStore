@@ -78,7 +78,7 @@ public class ExceptionMiddleware
     private async Task HandleServiceUnavailableExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
 
         await context.Response.WriteAsync(new ErrorDetails()
         {

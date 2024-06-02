@@ -31,11 +31,11 @@ public class TransactionsService : ITransactionsService
 
     public AccountBalanceResponse GetBalanceByAccountId(Guid id)
     {
-        _logger.Information("Вызываем метод репозитория");
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
         List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
         var balance = transactions.Sum(t => t.Amount);
 
-        _logger.Information("Считаем и передаем баланс");
+        _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
         AccountBalanceResponse accountBalance = new AccountBalanceResponse()
         {
             AccountId = transactions[0].AccountId,
@@ -46,18 +46,18 @@ public class TransactionsService : ITransactionsService
         return accountBalance;
     }
 
-    public List<TransactionsByAccountIdResponse> GetTransactionsByAccountId(Guid id) 
+    public List<TransactionResponse> GetTransactionsByAccountId(Guid id) 
     {
-        _logger.Information("Вызываем метод репозитория");
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
         List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
-        return _mapper.Map<List<TransactionsByAccountIdResponse>>(transactions);
+        return _mapper.Map<List<TransactionResponse>>(transactions);
     }
 
-    public List<TransactionsByLeadIdResponse> GetTransactionsByLeadId(Guid id)
+    public List<TransactionWithAccountIdResponse> GetTransactionsByLeadId(Guid id)
     {
-        _logger.Information("Вызываем метод репозитория");
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
         List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByLeadId(id);
-        return _mapper.Map<List<TransactionsByLeadIdResponse>>(transactions);
+        return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
     }
 
     public Guid AddDepositWithdrawTransaction(TransactionType transactionType, DepositWithdrawRequest request)

@@ -1,6 +1,8 @@
 ﻿using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Transactions.Requests;
 
+namespace TransactionStore.Business.Tests;
+
 public static class TransactionsServiceTestData
 {
     public static DepositWithdrawRequest GetDepositWithdrawRequest()
