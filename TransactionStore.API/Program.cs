@@ -30,9 +30,6 @@ try
     app.UseHttpsRedirection();
     app.UseSerilogRequestLogging();
 
-    app.UseAuthentication();
-    app.UseAuthorization();
-
     app.MapControllers();
 
     Log.Information("Running up");

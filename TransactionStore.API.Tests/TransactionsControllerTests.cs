@@ -1,9 +1,9 @@
-﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TransactionStore.API.Controllers;
 using TransactionStore.Business.Services;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Enums;
+using TransactionStore.Core.Models.Transactions.Requests;
 
 namespace TransactionStore.API.Tests;
 
@@ -17,18 +17,49 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public void GetTransactionsByLeadId_IdSent_OkResultReceieved()
+    public void AddDepositTransaction_ReturnsOk()
     {
-        //arrange
-        var id = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionsByLeadId(id)).Returns(new List<TransactionsByLeadIdResponse>());
-        var sut = new TransactionsController(_transactionsServiceMock.Object);
+        // Arrange
+        var controller = new TransactionsController(_transactionsServiceMock.Object);
+        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Deposit, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
 
-        //act
-        var actual = sut.GetTransactionsByLeadId(id);
+        var request = TransactionsControllerTestData.GetDepositRequest();
 
-        //assert
-        actual.Result.Should().BeOfType<OkObjectResult>();
-        _transactionsServiceMock.Verify(m => m.GetTransactionsByLeadId(id), Times.Once);
+        // Act
+        var result = controller.AddDepositTransaction(request);
+
+        // Assert
+        var okResult = Assert.IsType<ActionResult<Guid>>(result);
+    }
+
+    [Fact]
+    public void AddWithdrawTransaction_ReturnsOk()
+    {
+        // Arrange
+        var controller = new TransactionsController(_transactionsServiceMock.Object);
+        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Withdraw, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
+
+        var request = TransactionsControllerTestData.GetWithdrawRequest();
+
+        // Act
+        var result = controller.AddWithdrawTransaction(request);
+
+        // Assert
+        var okResult = Assert.IsType<ActionResult<Guid>>(result);
+    }
+
+    [Fact]
+    public void AddTransferTransaction_ReturnsOk()
+    {
+        // Arrange
+        var controller = new TransactionsController(_transactionsServiceMock.Object);
+        var request = TransactionsControllerTestData.GetTransferRequest();
+
+        // Act
+        var result = controller.AddTransferTransaction(request);
+
+        // Assert
+        var okResult = Assert.IsType<OkResult>(result);
+        Assert.Equal(200, okResult.StatusCode);
     }
 }

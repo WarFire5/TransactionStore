@@ -2,7 +2,7 @@
 
 namespace TransactionStore.Core.Models.Transactions.Responses;
 
-public class TransactionsByAccountIdResponse
+public class TransactionResponse
 {
     public Guid AccountId { get; set; }
     public TransactionType TransactionType { get; set; }
