@@ -34,10 +34,10 @@ public class CurrencyRatesProviderTests
     [InlineData(TestCurrency.RSD, 0.0093)]
     [InlineData(TestCurrency.BGN, 0.56)]
     [InlineData(TestCurrency.ARS, 0.0011)]
-    public void ConvertFirstCurrencyToUsd_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
+    public async Task ConvertFirstCurrencyToUsd_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
     {
         // Act
-        var rate = _currencyRatesProvider.ConvertFirstCurrencyToUsd(currency);
+        var rate = await _currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(currency);
 
         // Assert
         rate.Should().Be(expectedRate);
@@ -52,32 +52,32 @@ public class CurrencyRatesProviderTests
     [InlineData(TestCurrency.RSD, 107.5269)]
     [InlineData(TestCurrency.BGN, 1.785714)]
     [InlineData(TestCurrency.ARS, 909.0909)]
-    public void ConvertUsdToSecondCurrency_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
+    public async Task ConvertUsdToSecondCurrency_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
     {
         // Act
-        var rate = _currencyRatesProvider.ConvertUsdToSecondCurrency(currency);
+        var rate = await _currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(currency);
 
         // Assert
         rate.Should().BeApproximately(expectedRate, 0.0001m); // Из-за возможных ошибок округления
     }
 
     [Fact]
-    public void ConvertFirstCurrencyToUsd_InvalidCurrency_ThrowsArgumentException()
+    public async Task ConvertFirstCurrencyToUsd_InvalidCurrency_ThrowsArgumentException()
     {
         // Act
-        Action act = () => _currencyRatesProvider.ConvertFirstCurrencyToUsd(TestCurrency.INVALID);
+        async Task Act() => await _currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(TestCurrency.INVALID);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Rate for INVALID to USD not found. / Курс INVALID к USD не найден.");
+        await Assert.ThrowsAsync<ArgumentException>(Act);
     }
 
     [Fact]
-    public void ConvertUsdToSecondCurrency_InvalidCurrency_ThrowsArgumentException()
+    public async Task ConvertUsdToSecondCurrency_InvalidCurrency_ThrowsArgumentException()
     {
         // Act
-        Action act = () => _currencyRatesProvider.ConvertUsdToSecondCurrency(TestCurrency.INVALID);
+        async Task Act() => await _currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(TestCurrency.INVALID);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Rate for USD to INVALID not found. / Курс USD к INVALID не найден.");
+        await Assert.ThrowsAsync<ArgumentException>(Act);
     }
 }

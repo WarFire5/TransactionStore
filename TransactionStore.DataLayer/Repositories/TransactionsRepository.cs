@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
@@ -16,25 +17,25 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         }
     }
 
-    public List<TransactionDto> GetBalanceByAccountId(Guid id)
+    public async Task<List<TransactionDto>> GetBalanceByAccountIdAsync(Guid id)
     {
         _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
-        return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
+        return await _ctx.Transactions.Where(t => t.AccountId == id).ToListAsync();
     }
 
-    public List<TransactionDto> GetTransactionsByAccountId(Guid id)
+    public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)
     {
         _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
-        return _ctx.Transactions.Where(t => t.AccountId == id).ToList();
+        return await _ctx.Transactions.Where(t => t.AccountId == id).ToListAsync();
     }
 
-    public List<TransactionDto> GetTransactionsByLeadId(Guid id)
+    public async Task<List<TransactionDto>> GetTransactionsByLeadIdAsync(Guid id)
     {
         _logger.Information($"Looking for transactions by leadId {id} in the database. / Ищем в базе транзакции лида с Id {id}.");
-        return _ctx.Transactions.Where(t => t.Id == id).ToList();
+        return await _ctx.Transactions.Where(t => t.Id == id).ToListAsync();
     }
 
-    public Guid AddDepositWithdrawTransaction(TransactionDto transaction)
+    public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionDto transaction)
     {
         if (transaction == null)
         {
@@ -43,13 +44,13 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
         _logger.Information($"Recording the transaction in the database. / Записываем транзакцию в базу.");
         _ctx.Transactions.Add(transaction);
-        _ctx.SaveChanges();
+        await _ctx.SaveChangesAsync();
 
         _logger.Information($"Returning the Id {transaction.Id} of the added transaction. / Возвращаем Id {transaction.Id} добавленной транзакции.");
         return transaction.Id;
     }
 
-    public void AddTransferTransaction(TransactionDto transferWithdraw, TransactionDto transferDeposit)
+    public async Task AddTransferTransactionAsync(TransactionDto transferWithdraw, TransactionDto transferDeposit)
     {
         if (transferWithdraw == null)
         {
@@ -64,6 +65,6 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _logger.Information($"Recording the transfer-transactions in the database. / Записываем транзакции в базу.");
         _ctx.Transactions.Add(transferWithdraw);
         _ctx.Transactions.Add(transferDeposit);
-        _ctx.SaveChanges();
+        await _ctx.SaveChangesAsync();
     }
 }

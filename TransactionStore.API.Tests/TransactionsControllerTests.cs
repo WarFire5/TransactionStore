@@ -17,46 +17,46 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public void AddDepositTransaction_ReturnsOk()
+    public async void AddDepositTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
-        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Deposit, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
+        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, It.IsAny<DepositWithdrawRequest>())).ReturnsAsync(Guid.NewGuid());
 
         var request = TransactionsControllerTestData.GetDepositRequest();
 
         // Act
-        var result = controller.AddDepositTransaction(request);
+        var result = await controller.AddDepositTransaction(request);
 
         // Assert
         var okResult = Assert.IsType<ActionResult<Guid>>(result);
     }
 
     [Fact]
-    public void AddWithdrawTransaction_ReturnsOk()
+    public async void AddWithdrawTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
-        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransaction(TransactionType.Withdraw, It.IsAny<DepositWithdrawRequest>())).Returns(Guid.NewGuid());
+        _transactionsServiceMock.Setup(service => service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, It.IsAny<DepositWithdrawRequest>())).ReturnsAsync(Guid.NewGuid());
 
         var request = TransactionsControllerTestData.GetWithdrawRequest();
 
         // Act
-        var result = controller.AddWithdrawTransaction(request);
+        var result = await controller.AddWithdrawTransaction(request);
 
         // Assert
         var okResult = Assert.IsType<ActionResult<Guid>>(result);
     }
 
     [Fact]
-    public void AddTransferTransaction_ReturnsOk()
+    public async void AddTransferTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
         var request = TransactionsControllerTestData.GetTransferRequest();
 
         // Act
-        var result = controller.AddTransferTransaction(request);
+        var result = await controller.AddTransferTransaction(request);
 
         // Assert
         var okResult = Assert.IsType<OkResult>(result);

@@ -17,19 +17,19 @@ public class AccountsController : Controller
         _transactionsService = transactionsService;
     }
 
-    // получаем баланс по accountId
     [HttpGet("{id}/balance")]
-    public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
+    public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
-        return Ok(_transactionsService.GetBalanceByAccountId(id));
+        var balance = await _transactionsService.GetBalanceByAccountIdAsync(id);
+        return Ok(balance);
     }
 
-    // получаем список транзакций по accountId
     [HttpGet("{id}/transactions")]
-    public ActionResult<List<TransactionResponse>> GetTransactionsByAccountId(Guid id)
+    public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information($"Getting the account transactions by its Id {id}. / Получаем транзакции аккаунта по его Id {id}.");
-        return Ok(_transactionsService.GetTransactionsByAccountId(id));
+        var transactions = await _transactionsService.GetTransactionsByAccountIdAsync(id);
+        return Ok(transactions);
     }
 }

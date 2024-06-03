@@ -39,7 +39,7 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public void AddDepositWithdrawTransaction_Deposit_ValidTransaction()
+    public async Task AddDepositWithdrawTransaction_Deposit_ValidTransaction()
     {
         // Arrange
         var accountId = Guid.NewGuid();
@@ -52,18 +52,18 @@ public class TransactionsServiceTests
             Amount = request.Amount
         };
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
-        _depositWithdrawValidatorMock.Setup(v => v.Validate(request)).Returns(new FluentValidation.Results.ValidationResult());
+        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = _service.AddDepositWithdrawTransaction(TransactionType.Deposit, request);
+        var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
 
         // Assert
-        result.Should().Be(Guid.Empty);
-        _repositoryMock.Verify(r => r.AddDepositWithdrawTransaction(It.Is<TransactionDto>(t => t.TransactionType == TransactionType.Deposit && t.Amount == 100)), Times.Once);
+        result.Should().Be(transactionDto.Id);
+        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t => t.TransactionType == TransactionType.Deposit && t.Amount == 100)), Times.Once);
     }
 
     [Fact]
-    public void AddDepositWithdrawTransaction_Withdraw_ValidTransaction()
+    public async Task AddDepositWithdrawTransaction_Withdraw_ValidTransaction()
     {
         // Arrange
         var accountId = Guid.NewGuid();
@@ -77,22 +77,22 @@ public class TransactionsServiceTests
         };
 
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
-        _depositWithdrawValidatorMock.Setup(v => v.Validate(request)).Returns(new ValidationResult());
+        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
 
         var expectedTransactionId = Guid.NewGuid();
-        _repositoryMock.Setup(r => r.AddDepositWithdrawTransaction(It.IsAny<TransactionDto>())).Returns(expectedTransactionId);
+        _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>())).ReturnsAsync(expectedTransactionId);
 
         // Act
-        var result = _service.AddDepositWithdrawTransaction(TransactionType.Withdraw, request);
+        var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, request);
 
         // Assert
         result.Should().Be(expectedTransactionId, because: "the transaction should have been created successfully.");
-        _repositoryMock.Verify(r => r.AddDepositWithdrawTransaction(It.Is<TransactionDto>(t =>
+        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.TransactionType == TransactionType.Withdraw && t.Amount == -100)), Times.Once);
     }
 
     [Fact]
-    public void AddDepositWithdrawTransaction_ValidRequest_ReturnsTransactionId()
+    public async Task AddDepositWithdrawTransaction_ValidRequest_ReturnsTransactionId()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetDepositWithdrawRequest();
@@ -104,18 +104,18 @@ public class TransactionsServiceTests
             TransactionType = TransactionType.Deposit
         };
 
-        _depositWithdrawValidatorMock.Setup(v => v.Validate(It.IsAny<DepositWithdrawRequest>()))
-                                     .Returns(new ValidationResult());
+        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(It.IsAny<DepositWithdrawRequest>(), default))
+                                     .ReturnsAsync(new ValidationResult());
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
         var transactionId = Guid.NewGuid();
-        _repositoryMock.Setup(r => r.AddDepositWithdrawTransaction(It.IsAny<TransactionDto>())).Returns(transactionId);
+        _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>())).ReturnsAsync(transactionId);
 
         // Act
-        var result = _service.AddDepositWithdrawTransaction(TransactionType.Deposit, request);
+        var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
 
         // Assert
         result.Should().Be(transactionId);
-        _repositoryMock.Verify(r => r.AddDepositWithdrawTransaction(It.Is<TransactionDto>(t =>
+        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.AccountId == request.AccountId &&
             t.CurrencyType == request.CurrencyType &&
             t.Amount == request.Amount &&
@@ -124,23 +124,23 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public void AddDepositWithdrawTransaction_InvalidRequest_ThrowsValidationException()
+    public async Task AddDepositWithdrawTransaction_InvalidRequest_ThrowsValidationException()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetDepositWithdrawRequest();
         var validationFailures = new[] { new ValidationFailure("Amount", "Amount must be greater than zero.") };
-        _depositWithdrawValidatorMock.Setup(v => v.Validate(It.IsAny<DepositWithdrawRequest>()))
-                                     .Returns(new ValidationResult(validationFailures));
+        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(It.IsAny<DepositWithdrawRequest>(), default))
+                                     .ReturnsAsync(new ValidationResult(validationFailures));
 
         // Act
-        Action act = () => _service.AddDepositWithdrawTransaction(TransactionType.Deposit, request);
+        Func<Task> act = async () => await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
 
         // Assert
-        act.Should().Throw<ValidationException>().WithMessage("Amount must be greater than zero.");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero.");
     }
 
     [Fact]
-    public void CreateWithdrawTransaction_ValidRequest_CorrectWithdrawTransaction()
+    public async Task CreateWithdrawTransaction_ValidRequest_CorrectWithdrawTransaction()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetValidWithdrawRequest();
@@ -154,7 +154,7 @@ public class TransactionsServiceTests
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
 
         // Act
-        var result = _service.CreateWithdrawTransaction(request);
+        var result = await _service.CreateWithdrawTransactionAsync(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -165,7 +165,7 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public void CreateDepositTransaction_ValidRequest_CorrectDepositTransaction()
+    public async Task CreateDepositTransaction_ValidRequest_CorrectDepositTransaction()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetValidTransferRequest();
@@ -174,8 +174,8 @@ public class TransactionsServiceTests
         var amountUsd = request.Amount * rateToUSD;
         var expectedAmount = amountUsd * rateFromUSD;
 
-        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
-        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType)).ReturnsAsync(rateToUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType)).ReturnsAsync(rateFromUSD);
 
         var transactionDto = new TransactionDto
         {
@@ -187,7 +187,7 @@ public class TransactionsServiceTests
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
 
         // Act
-        var result = _service.CreateDepositTransaction(request);
+        var result = await _service.CreateDepositTransactionAsync(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -198,7 +198,7 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public void AddTransferTransaction_ValidTransaction()
+    public async Task AddTransferTransaction_ValidTransaction()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetValidTransferRequest();
@@ -220,45 +220,45 @@ public class TransactionsServiceTests
             CurrencyType = request.CurrencyToType,
             Amount = depositAmount
         };
-        _transferValidatorMock.Setup(v => v.Validate(request)).Returns(new FluentValidation.Results.ValidationResult());
-        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
-        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
+        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
+        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType)).ReturnsAsync(rateToUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType)).ReturnsAsync(rateFromUSD);
 
         // Act
-        _service.AddTransferTransaction(request);
+        await _service.AddTransferTransactionAsync(request);
 
         // Assert
-        _repositoryMock.Verify(r => r.AddTransferTransaction(It.Is<TransactionDto>(t => t.AccountId == request.AccountFromId && t.Amount == -100), It.Is<TransactionDto>(t => t.AccountId == request.AccountToId && t.Amount == depositAmount)), Times.Once);
+        _repositoryMock.Verify(r => r.AddTransferTransactionAsync(It.Is<TransactionDto>(t => t.AccountId == request.AccountFromId && t.Amount == -100), It.Is<TransactionDto>(t => t.AccountId == request.AccountToId && t.Amount == depositAmount)), Times.Once);
     }
 
     [Fact]
-    public void AddTransferTransaction_ValidRequest_TransactionsAdded()
+    public async Task AddTransferTransaction_ValidRequest_TransactionsAdded()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetTransferRequest();
-        _transferValidatorMock.Setup(v => v.Validate(It.IsAny<TransferRequest>()))
-                              .Returns(new ValidationResult());
+        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default))
+                              .ReturnsAsync(new ValidationResult());
 
         // Act
-        _service.AddTransferTransaction(request);
+        await _service.AddTransferTransactionAsync(request);
 
         // Assert
-        _repositoryMock.Verify(r => r.AddTransferTransaction(It.IsAny<TransactionDto>(), It.IsAny<TransactionDto>()), Times.Once);
+        _repositoryMock.Verify(r => r.AddTransferTransactionAsync(It.IsAny<TransactionDto>(), It.IsAny<TransactionDto>()), Times.Once);
     }
 
     [Fact]
-    public void AddTransferTransaction_InvalidRequest_ThrowsValidationException()
+    public async Task AddTransferTransaction_InvalidRequest_ThrowsValidationException()
     {
         // Arrange
         var request = TransactionsServiceTestData.GetTransferRequest();
         var validationFailures = new[] { new ValidationFailure("Amount", "Amount must be greater than zero.") };
-        _transferValidatorMock.Setup(v => v.Validate(It.IsAny<TransferRequest>()))
-                              .Returns(new ValidationResult(validationFailures));
+        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default))
+                              .ReturnsAsync(new ValidationResult(validationFailures));
 
         // Act
-        Action act = () => _service.AddTransferTransaction(request);
+        Func<Task> act = async () => await _service.AddTransferTransactionAsync(request);
 
         // Assert
-        act.Should().Throw<ValidationException>().WithMessage("Amount must be greater than zero.");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero.");
     }
 }

@@ -5,35 +5,26 @@ namespace TransactionStore.API.Tests;
 
 public static class TransactionsControllerTestData
 {
-    public static DepositWithdrawRequest GetDepositRequest()
+    public static DepositWithdrawRequest GetDepositRequest() => new()
     {
-        return new DepositWithdrawRequest
-        {
-            AccountId = Guid.NewGuid(),
-            CurrencyType = CurrencyType.USD,
-            Amount = 100
-        };
-    }
+        AccountId = Guid.NewGuid(),
+        CurrencyType = CurrencyType.USD,
+        Amount = 100
+    };
 
-    public static DepositWithdrawRequest GetWithdrawRequest()
+    public static DepositWithdrawRequest GetWithdrawRequest() => new()
     {
-        return new DepositWithdrawRequest
-        {
-            AccountId = Guid.NewGuid(),
-            CurrencyType = CurrencyType.USD,
-            Amount = 100
-        };
-    }
+        AccountId = Guid.NewGuid(),
+        CurrencyType = CurrencyType.USD,
+        Amount = 100
+    };
 
-    public static TransferRequest GetTransferRequest()
+    public static TransferRequest GetTransferRequest() => new()
     {
-        return new TransferRequest
-        {
-            AccountFromId = Guid.NewGuid(),
-            AccountToId = Guid.NewGuid(),
-            CurrencyFromType = CurrencyType.RUB,
-            CurrencyToType = CurrencyType.EUR,
-            Amount = 100
-        };
-    }
+        AccountFromId = Guid.NewGuid(),
+        AccountToId = Guid.NewGuid(),
+        CurrencyFromType = CurrencyType.RUB,
+        CurrencyToType = CurrencyType.EUR,
+        Amount = 100
+    };
 }

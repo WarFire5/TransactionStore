@@ -29,10 +29,10 @@ public class TransactionsService : ITransactionsService
         _addTransferValidator = addTransferValidator;
     }
 
-    public AccountBalanceResponse GetBalanceByAccountId(Guid id)
+    public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
         var balance = transactions.Sum(t => t.Amount);
 
         _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
@@ -42,27 +42,27 @@ public class TransactionsService : ITransactionsService
             Balance = balance,
             CurrencyType = transactions[0].CurrencyType
         };
-       
+
         return accountBalance;
     }
 
-    public List<TransactionResponse> GetTransactionsByAccountId(Guid id) 
+    public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
         return _mapper.Map<List<TransactionResponse>>(transactions);
     }
 
-    public List<TransactionWithAccountIdResponse> GetTransactionsByLeadId(Guid id)
+    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionsByLeadIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByLeadId(id);
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByLeadIdAsync(id);
         return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
     }
 
-    public Guid AddDepositWithdrawTransaction(TransactionType transactionType, DepositWithdrawRequest request)
+    public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
-        var validationResult = _addDepositWithdrawValidator.Validate(request);
+        var validationResult = await _addDepositWithdrawValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
@@ -82,23 +82,23 @@ public class TransactionsService : ITransactionsService
 
             transaction.TransactionType = transactionType;
 
-            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
+            return await _transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
         throw new ValidationException(exceptions);
     }
 
-    public void AddTransferTransaction(TransferRequest request)
+    public async Task AddTransferTransactionAsync(TransferRequest request)
     {
-        var validationResult = _addTransferValidator.Validate(request);
+        var validationResult = await _addTransferValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
-            var transferWithdraw = CreateWithdrawTransaction(request);
-            var transferDeposit = CreateDepositTransaction(request);
+            var transferWithdraw = await CreateWithdrawTransactionAsync(request);
+            var transferDeposit = await CreateDepositTransactionAsync(request);
 
-            _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+            await _transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
         }
         else
         {
@@ -107,23 +107,23 @@ public class TransactionsService : ITransactionsService
         }
     }
 
-    public TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    public async Task<TransactionDto> CreateWithdrawTransactionAsync(TransferRequest request)
     {
-        return new TransactionDto
+        return await Task.FromResult(new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
             CurrencyType = request.CurrencyFromType,
             Amount = request.Amount * -1
-        };
+        });
     }
 
-    public TransactionDto CreateDepositTransaction(TransferRequest request)
+    public async Task<TransactionDto> CreateDepositTransactionAsync(TransferRequest request)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
+        var rateToUSD = await currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType);
         var amountUsd = request.Amount * rateToUSD;
-        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
+        var rateFromUsd = await currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType);
 
         return new TransactionDto
         {
