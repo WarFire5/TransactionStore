@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Models.Transactions.Responses;
@@ -17,13 +17,15 @@ public class AccountsController : Controller
         _transactionsService = transactionsService;
     }
 
-    [HttpGet("/api/accounts/balance/{id}")]
+    // получаем баланс по accountId
+    [HttpGet("balance/{id}")]
     public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
         return Ok(_transactionsService.GetBalanceByAccountId(id));
     }
 
+    // получаем список транзакций по accountId
     [HttpGet("{id}/transactions")]
     public ActionResult<List<TransactionResponse>> GetTransactionsByAccountId(Guid id)
     {
