@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TransactionStore.API.Controllers;
 using TransactionStore.Business.Services;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.API.Tests;
 

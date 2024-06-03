@@ -3,7 +3,7 @@ using Moq;
 using TransactionStore.API.Controllers;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Enums;
-using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Requests;
 
 namespace TransactionStore.API.Tests;
 

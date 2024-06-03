@@ -1,9 +1,9 @@
 using AutoMapper;
 using TransactionStore.Core.DTOs;
-using TransactionStore.Core.Models.Transactions.Requests;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Models.Requests;
+using TransactionStore.Core.Models.Responses;
 
-namespace TransactionStore.Core.Models.Transactions;
+namespace TransactionStore.Core.Models;
 
 public class TransactionsMappingProfile : Profile
 {

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Requests;
 
 namespace Backend.Core.Validators;
 

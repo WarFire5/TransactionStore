@@ -1,6 +1,6 @@
 using TransactionStore.Core.Enums;
 
-namespace TransactionStore.Core.Models.Transactions.Requests;
+namespace TransactionStore.Core.Models.Requests;
 
 public class DepositWithdrawRequest
 {

@@ -7,7 +7,7 @@ using TransactionStore.Business.Services;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
-using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Requests;
 using TransactionStore.DataLayer.Repositories;
 
 namespace TransactionStore.Business.Tests;

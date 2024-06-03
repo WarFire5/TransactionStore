@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Enums;
-using TransactionStore.Core.Models.Transactions.Requests;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Models.Requests;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.API.Controllers;
 

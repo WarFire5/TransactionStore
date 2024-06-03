@@ -1,6 +1,6 @@
 using TransactionStore.Core.Enums;
 
-namespace TransactionStore.Core.Models.Transactions.Responses;
+namespace TransactionStore.Core.Models.Responses;
 
 public class AccountBalanceResponse
 {

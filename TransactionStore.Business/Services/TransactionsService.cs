@@ -4,8 +4,8 @@ using Serilog;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
-using TransactionStore.Core.Models.Transactions.Requests;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Models.Requests;
+using TransactionStore.Core.Models.Responses;
 using TransactionStore.DataLayer.Repositories;
 using ValidationException = FluentValidation.ValidationException;
 
