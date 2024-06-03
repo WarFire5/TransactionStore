@@ -18,7 +18,7 @@ public class AccountsController : Controller
     }
 
     // получаем баланс по accountId
-    [HttpGet("balance/{id}")]
+    [HttpGet("{id}/balance")]
     public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
