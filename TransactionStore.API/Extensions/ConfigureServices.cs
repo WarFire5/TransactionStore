@@ -1,5 +1,5 @@
 using TransactionStore.API.Filters;
-using TransactionStore.Core.Models.Transactions;
+using TransactionStore.Core.Models;
 
 namespace TransactionStore.API.Extensions;
 

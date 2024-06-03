@@ -2,7 +2,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TransactionStore.Business.Services;
-using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Requests;
 
 namespace TransactionStore.Business;
 

@@ -1,5 +1,5 @@
 ﻿using TransactionStore.Core.Enums;
-using TransactionStore.Core.Models.Transactions.Requests;
+using TransactionStore.Core.Models.Requests;
 
 namespace TransactionStore.Business.Tests;
 

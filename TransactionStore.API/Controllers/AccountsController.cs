@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
-using TransactionStore.Core.Models.Transactions.Responses;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.API.Controllers;
 
@@ -18,7 +18,7 @@ public class AccountsController : Controller
     }
 
     // получаем баланс по accountId
-    [HttpGet("balance/{id}")]
+    [HttpGet("{id}/balance")]
     public ActionResult<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
