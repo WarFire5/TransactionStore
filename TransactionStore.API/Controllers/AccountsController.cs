@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Models.Transactions.Responses;
