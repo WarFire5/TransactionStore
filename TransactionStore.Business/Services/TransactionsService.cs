@@ -107,7 +107,7 @@ public class TransactionsService : ITransactionsService
         }
     }
 
-    private TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    public TransactionDto CreateWithdrawTransaction(TransferRequest request)
     {
         return new TransactionDto
         {
@@ -118,7 +118,7 @@ public class TransactionsService : ITransactionsService
         };
     }
 
-    private TransactionDto CreateDepositTransaction(TransferRequest request)
+    public TransactionDto CreateDepositTransaction(TransferRequest request)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);

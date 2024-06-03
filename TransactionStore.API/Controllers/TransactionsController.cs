@@ -20,7 +20,7 @@ public class TransactionsController : Controller
     }
 
     // добавляем транзакцию на депозит
-    [HttpPost("/deposit")]
+    [HttpPost("deposit")]
     public ActionResult<Guid> AddDepositTransaction([FromBody] DepositWithdrawRequest request)
     {
         _logger.Information(
@@ -29,7 +29,7 @@ public class TransactionsController : Controller
     }
 
     // добавляем транзакцию на снятие 
-    [HttpPost("/withdraw")]
+    [HttpPost("withdraw")]
     public ActionResult<Guid> AddWithdrawTransaction([FromBody] DepositWithdrawRequest request)
     {
         _logger.Information(
@@ -38,7 +38,7 @@ public class TransactionsController : Controller
     }
 
     // добавляем транзакцию на трансфер 
-    [HttpPost("/transfer")]
+    [HttpPost("transfer")]
     public ActionResult AddTransferTransaction([FromBody] TransferRequest request)
     {
         _logger.Information(
@@ -47,11 +47,11 @@ public class TransactionsController : Controller
         return Ok();
     }
 
-    // получаем список транзакций по accountId
-    [HttpGet("/by-{accountId}")]
-    public ActionResult<List<TransactionResponse>> GetTransactionsByAccountId(Guid accountId)
+    // получаем список транзакций по leadId
+    [HttpGet("by-lead/{id}")]
+    public ActionResult<List<TransactionWithAccountIdResponse>> GetTransactionsByLeadId(Guid id)
     {
-        _logger.Information($"Getting the account transactions by accountId {accountId}. / Получаем список транзакций по accountId {accountId}.");
-        return Ok(_transactionsService.GetTransactionsByAccountId(accountId));
+        _logger.Information($"Getting the account transactions by leadId {id}. / Получаем список транзакций по leadId {id}.");
+        return Ok(_transactionsService.GetTransactionsByLeadId(id));
     }
 }

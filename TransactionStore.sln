@@ -3,40 +3,42 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.API", "TransactionStore.API\TransactionStore.API.csproj", "{E0E4A1FA-E7F3-4285-9E0B-78907BD17D35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.API", "TransactionStore.API\TransactionStore.API.csproj", "{E0E4A1FA-E7F3-4285-9E0B-78907BD17D35}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1033E766-A31D-43AB-92B7-A34D75E5F8E3} = {1033E766-A31D-43AB-92B7-A34D75E5F8E3}
 		{16FE4DF0-B524-4386-8BCE-A5F2D33B6290} = {16FE4DF0-B524-4386-8BCE-A5F2D33B6290}
 		{5D9D066D-BBFC-49C3-BB7B-2C038BC28058} = {5D9D066D-BBFC-49C3-BB7B-2C038BC28058}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.Business", "TransactionStore.Business\TransactionStore.Business.csproj", "{5D9D066D-BBFC-49C3-BB7B-2C038BC28058}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.Business", "TransactionStore.Business\TransactionStore.Business.csproj", "{5D9D066D-BBFC-49C3-BB7B-2C038BC28058}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1033E766-A31D-43AB-92B7-A34D75E5F8E3} = {1033E766-A31D-43AB-92B7-A34D75E5F8E3}
 		{16FE4DF0-B524-4386-8BCE-A5F2D33B6290} = {16FE4DF0-B524-4386-8BCE-A5F2D33B6290}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.Business.Tests", "TransactionStore.Business.Tests\TransactionStore.Business.Tests.csproj", "{128EFD68-BF6C-40DE-8B5E-F29842EE4359}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.Business.Tests", "TransactionStore.Business.Tests\TransactionStore.Business.Tests.csproj", "{128EFD68-BF6C-40DE-8B5E-F29842EE4359}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5D9D066D-BBFC-49C3-BB7B-2C038BC28058} = {5D9D066D-BBFC-49C3-BB7B-2C038BC28058}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.DataLayer", "TransactionStore.DataLayer\TransactionStore.DataLayer.csproj", "{16FE4DF0-B524-4386-8BCE-A5F2D33B6290}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.DataLayer", "TransactionStore.DataLayer\TransactionStore.DataLayer.csproj", "{16FE4DF0-B524-4386-8BCE-A5F2D33B6290}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1033E766-A31D-43AB-92B7-A34D75E5F8E3} = {1033E766-A31D-43AB-92B7-A34D75E5F8E3}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.DataLayer.Tests", "TransactionStore.DataLayer.Tests\TransactionStore.DataLayer.Tests.csproj", "{9F391CA2-7448-4533-8BF1-EE7C80FEAB85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.DataLayer.Tests", "TransactionStore.DataLayer.Tests\TransactionStore.DataLayer.Tests.csproj", "{9F391CA2-7448-4533-8BF1-EE7C80FEAB85}"
 	ProjectSection(ProjectDependencies) = postProject
 		{16FE4DF0-B524-4386-8BCE-A5F2D33B6290} = {16FE4DF0-B524-4386-8BCE-A5F2D33B6290}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.Core", "TransactionStore.Core\TransactionStore.Core.csproj", "{1033E766-A31D-43AB-92B7-A34D75E5F8E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.Core", "TransactionStore.Core\TransactionStore.Core.csproj", "{1033E766-A31D-43AB-92B7-A34D75E5F8E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.API.Tests", "TransactionStore.API.Tests\TransactionStore.API.Tests.csproj", "{A865DD19-BD73-4886-9A71-74299D7510A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransactionStore.API.Tests", "TransactionStore.API.Tests\TransactionStore.API.Tests.csproj", "{A865DD19-BD73-4886-9A71-74299D7510A0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E0E4A1FA-E7F3-4285-9E0B-78907BD17D35} = {E0E4A1FA-E7F3-4285-9E0B-78907BD17D35}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionStore.Core.Tests", "TransactionStore.Core.Tests\TransactionStore.Core.Tests.csproj", "{62141529-663F-40AC-95C4-905C670A6249}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,6 +74,10 @@ Global
 		{A865DD19-BD73-4886-9A71-74299D7510A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A865DD19-BD73-4886-9A71-74299D7510A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A865DD19-BD73-4886-9A71-74299D7510A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62141529-663F-40AC-95C4-905C670A6249}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62141529-663F-40AC-95C4-905C670A6249}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62141529-663F-40AC-95C4-905C670A6249}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62141529-663F-40AC-95C4-905C670A6249}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

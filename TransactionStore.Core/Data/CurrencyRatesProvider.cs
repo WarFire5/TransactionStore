@@ -1,6 +1,6 @@
 namespace TransactionStore.Core.Data
 {
-    public class CurrencyRatesProvider
+    public class CurrencyRatesProvider: ICurrencyRatesProvider
     {
         private readonly Dictionary<string, decimal> _rates;
 
@@ -31,7 +31,7 @@ namespace TransactionStore.Core.Data
             {
                 return rateToUsd;
             }
-            throw new ArgumentException($"Rate for {currency} to USD not found. /  урс USD к {currency} не найден.");
+            throw new ArgumentException($"Rate for {currency} to USD not found. /  урс {currency} к USD не найден.");
         }
 
         public decimal ConvertUsdToSecondCurrency(Enum currencyEnum)
