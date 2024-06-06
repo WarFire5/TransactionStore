@@ -154,7 +154,7 @@ public class TransactionsServiceTests
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
 
         // Act
-        var result = await _service.CreateWithdrawTransactionAsync(request);
+        var result = _service.CreateWithdrawTransaction(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -174,8 +174,8 @@ public class TransactionsServiceTests
         var amountUsd = request.Amount * rateToUSD;
         var expectedAmount = amountUsd * rateFromUSD;
 
-        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType)).ReturnsAsync(rateToUSD);
-        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType)).ReturnsAsync(rateFromUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
 
         var transactionDto = new TransactionDto
         {
@@ -187,7 +187,7 @@ public class TransactionsServiceTests
         _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
 
         // Act
-        var result = await _service.CreateDepositTransactionAsync(request);
+        var result = _service.CreateDepositTransaction(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -221,8 +221,8 @@ public class TransactionsServiceTests
             Amount = depositAmount
         };
         _transferValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
-        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType)).ReturnsAsync(rateToUSD);
-        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType)).ReturnsAsync(rateFromUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
 
         // Act
         await _service.AddTransferTransactionAsync(request);

@@ -34,10 +34,10 @@ public class CurrencyRatesProviderTests
     [InlineData(TestCurrency.RSD, 0.0093)]
     [InlineData(TestCurrency.BGN, 0.56)]
     [InlineData(TestCurrency.ARS, 0.0011)]
-    public async Task ConvertFirstCurrencyToUsd_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
+    public void ConvertFirstCurrencyToUsd_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
     {
         // Act
-        var rate = await _currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(currency);
+        var rate = _currencyRatesProvider.ConvertFirstCurrencyToUsd(currency);
 
         // Assert
         rate.Should().Be(expectedRate);
@@ -52,32 +52,32 @@ public class CurrencyRatesProviderTests
     [InlineData(TestCurrency.RSD, 107.5269)]
     [InlineData(TestCurrency.BGN, 1.785714)]
     [InlineData(TestCurrency.ARS, 909.0909)]
-    public async Task ConvertUsdToSecondCurrency_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
+    public void ConvertUsdToSecondCurrency_ValidCurrency_ReturnsCorrectRate(TestCurrency currency, decimal expectedRate)
     {
         // Act
-        var rate = await _currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(currency);
+        var rate = _currencyRatesProvider.ConvertUsdToSecondCurrency(currency);
 
         // Assert
         rate.Should().BeApproximately(expectedRate, 0.0001m); // Из-за возможных ошибок округления
     }
 
     [Fact]
-    public async Task ConvertFirstCurrencyToUsd_InvalidCurrency_ThrowsArgumentException()
+    public void ConvertFirstCurrencyToUsd_InvalidCurrency_ThrowsArgumentException()
     {
         // Act
-        async Task Act() => await _currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(TestCurrency.INVALID);
+        Action act = () => _currencyRatesProvider.ConvertFirstCurrencyToUsd(TestCurrency.INVALID);
 
         // Assert
-        await Assert.ThrowsAsync<ArgumentException>(Act);
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
-    public async Task ConvertUsdToSecondCurrency_InvalidCurrency_ThrowsArgumentException()
+    public void ConvertUsdToSecondCurrency_InvalidCurrency_ThrowsArgumentException()
     {
         // Act
-        async Task Act() => await _currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(TestCurrency.INVALID);
+        Action act = () => _currencyRatesProvider.ConvertUsdToSecondCurrency(TestCurrency.INVALID);
 
         // Assert
-        await Assert.ThrowsAsync<ArgumentException>(Act);
+        act.Should().Throw<ArgumentException>();
     }
 }

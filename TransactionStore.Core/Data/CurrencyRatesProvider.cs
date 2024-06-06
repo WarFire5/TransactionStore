@@ -7,16 +7,16 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
     public CurrencyRatesProvider()
     {
         _rates = new Dictionary<string, decimal>()
-        {
-            { "USD", 1m },
-            { "RUB", 0.011m },
-            { "EUR", 1.09m },
-            { "JPY", 0.0064m },
-            { "CNY", 0.14m },
-            { "RSD", 0.0093m },
-            { "BGN", 0.56m },
-            { "ARS", 0.0011m }
-        };
+            {
+                { "USD", 1m },
+                { "RUB", 0.011m },
+                { "EUR", 1.09m },
+                { "JPY", 0.0064m },
+                { "CNY", 0.14m },
+                { "RSD", 0.0093m },
+                { "BGN", 0.56m },
+                { "ARS", 0.0011m }
+            };
     }
 
     private string ConvertCurrencyEnumToString(Enum currencyEnum)
@@ -24,22 +24,22 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         return currencyEnum.ToString().ToUpper();
     }
 
-    public Task<decimal> ConvertFirstCurrencyToUsdAsync(Enum currencyEnum)
+    public decimal ConvertFirstCurrencyToUsd(Enum currencyEnum)
     {
         var currency = ConvertCurrencyEnumToString(currencyEnum);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
-            return Task.FromResult(rateToUsd);
+            return rateToUsd;
         }
         throw new ArgumentException($"Rate for {currency} to USD not found. /  урс {currency} к USD не найден.");
     }
 
-    public Task<decimal> ConvertUsdToSecondCurrencyAsync(Enum currencyEnum)
+    public decimal ConvertUsdToSecondCurrency(Enum currencyEnum)
     {
         var currency = ConvertCurrencyEnumToString(currencyEnum);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
-            return Task.FromResult(1m / rateToUsd);
+            return 1 / rateToUsd;
         }
         throw new ArgumentException($"Rate for USD to {currency} not found. /  урс USD к {currency} не найден.");
     }

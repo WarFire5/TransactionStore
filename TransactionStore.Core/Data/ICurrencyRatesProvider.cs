@@ -2,6 +2,6 @@
 
 public interface ICurrencyRatesProvider
 {
-    Task<decimal> ConvertFirstCurrencyToUsdAsync(Enum currencyEnum);
-    Task<decimal> ConvertUsdToSecondCurrencyAsync(Enum currencyEnum);
+    decimal ConvertFirstCurrencyToUsd(Enum currencyEnum);
+    decimal ConvertUsdToSecondCurrency(Enum currencyEnum);
 }

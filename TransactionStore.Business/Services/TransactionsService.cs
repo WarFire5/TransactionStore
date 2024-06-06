@@ -95,8 +95,8 @@ public class TransactionsService : ITransactionsService
 
         if (validationResult.IsValid)
         {
-            var transferWithdraw = await CreateWithdrawTransactionAsync(request);
-            var transferDeposit = await CreateDepositTransactionAsync(request);
+            var transferWithdraw = CreateWithdrawTransaction(request);
+            var transferDeposit = CreateDepositTransaction(request);
 
             await _transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
         }
@@ -107,23 +107,23 @@ public class TransactionsService : ITransactionsService
         }
     }
 
-    public async Task<TransactionDto> CreateWithdrawTransactionAsync(TransferRequest request)
+    public TransactionDto CreateWithdrawTransaction(TransferRequest request)
     {
-        return await Task.FromResult(new TransactionDto
+        return new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
             CurrencyType = request.CurrencyFromType,
             Amount = request.Amount * -1
-        });
+        };
     }
 
-    public async Task<TransactionDto> CreateDepositTransactionAsync(TransferRequest request)
+    public TransactionDto CreateDepositTransaction(TransferRequest request)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = await currencyRatesProvider.ConvertFirstCurrencyToUsdAsync(request.CurrencyFromType);
+        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
         var amountUsd = request.Amount * rateToUSD;
-        var rateFromUsd = await currencyRatesProvider.ConvertUsdToSecondCurrencyAsync(request.CurrencyToType);
+        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
 
         return new TransactionDto
         {
