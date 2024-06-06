@@ -1,8 +1,9 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TransactionStore.Core.DTOs;
-using TransactionStore.DataLayer;
 using TransactionStore.DataLayer.Repositories;
+
+namespace TransactionStore.DataLayer.Tests;
 
 public class TransactionsRepositoryTests
 {
@@ -38,7 +39,7 @@ public class TransactionsRepositoryTests
             var expected = new List<TransactionDto> { transaction };
 
             // Act
-            var result = await repository.GetBalanceByAccountIdAsync(accountId);
+            var result = await repository.GetTransactionsByAccountIdAsync(accountId);
 
             // Assert
             result.Should().BeEquivalentTo(expected);
@@ -46,10 +47,10 @@ public class TransactionsRepositoryTests
     }
 
     [Fact]
-    public async Task GetTransactionsByLeadId_GuidSent_ListTransactionsDtoReceived()
+    public async Task GetTransactionsById_GuidSent_ListTransactionsDtoReceived()
     {
         // Arrange
-        var leadId = new Guid("550df504-032e-4ef7-aee2-53cf66e4d0c8");
+        var id = new Guid("550df504-032e-4ef7-aee2-53cf66e4d0c8");
 
         var options = new DbContextOptionsBuilder<TransactionStoreContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // ”никальное им€ базы данных
@@ -59,14 +60,14 @@ public class TransactionsRepositoryTests
         {
             var repository = new TransactionsRepository(context);
 
-            var transaction = new TransactionDto { Id = leadId, AccountId = Guid.NewGuid(), Amount = 100 };
+            var transaction = new TransactionDto { Id = id, AccountId = Guid.NewGuid(), Amount = 100 };
             context.Transactions.Add(transaction);
             await context.SaveChangesAsync();
 
             var expected = new List<TransactionDto> { transaction };
 
             // Act
-            var result = await repository.GetTransactionsByLeadIdAsync(leadId);
+            var result = await repository.GetTransactionsByIdAsync(id);
 
             // Assert
             result.Should().BeEquivalentTo(expected);

@@ -53,10 +53,10 @@ public class TransactionsService : ITransactionsService
         return _mapper.Map<List<TransactionResponse>>(transactions);
     }
 
-    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionsByLeadIdAsync(Guid id)
+    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionsByIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByLeadIdAsync(id);
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByIdAsync(id);
         return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
     }
 
