@@ -1,12 +1,13 @@
 using AutoMapper;
+using Backend.Core.Validators;
 using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Results;
 using Moq;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
+using TransactionStore.Core.Models;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.DataLayer.Repositories;
 
@@ -15,26 +16,30 @@ namespace TransactionStore.Business.Tests;
 public class TransactionsServiceTests
 {
     private readonly Mock<ITransactionsRepository> _repositoryMock;
-    private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<ICurrencyRatesProvider> _currencyRatesProviderMock;
-    private readonly Mock<IValidator<DepositWithdrawRequest>> _depositWithdrawValidatorMock;
-    private readonly Mock<IValidator<TransferRequest>> _transferValidatorMock;
+
+    private readonly IValidator<DepositWithdrawRequest> _depositWithdrawValidator;
+    private readonly IValidator<TransferRequest> _transferValidator;
+    private readonly IMapper _mapper;
 
     private readonly TransactionsService _service;
 
     public TransactionsServiceTests()
     {
         _repositoryMock = new Mock<ITransactionsRepository>();
-        _mapperMock = new Mock<IMapper>();
         _currencyRatesProviderMock = new Mock<ICurrencyRatesProvider>();
-        _depositWithdrawValidatorMock = new Mock<IValidator<DepositWithdrawRequest>>();
-        _transferValidatorMock = new Mock<IValidator<TransferRequest>>();
+
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>());
+        _mapper = config.CreateMapper();
+
+        _depositWithdrawValidator = new AddDepositWithdrawValidator();
+        _transferValidator = new AddTransferValidator();
 
         _service = new TransactionsService(
             _repositoryMock.Object,
-            _mapperMock.Object,
-            _depositWithdrawValidatorMock.Object,
-            _transferValidatorMock.Object
+            _mapper,
+            _depositWithdrawValidator,
+            _transferValidator
         );
     }
 
@@ -44,15 +49,7 @@ public class TransactionsServiceTests
         // Arrange
         var accountId = Guid.NewGuid();
         var request = TransactionsServiceTestData.GetValidDepositRequest(accountId);
-        var transactionDto = new TransactionDto
-        {
-            AccountId = request.AccountId,
-            TransactionType = TransactionType.Deposit,
-            CurrencyType = request.CurrencyType,
-            Amount = request.Amount
-        };
-        _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
-        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
+        var transactionDto = _mapper.Map<TransactionDto>(request);
 
         // Act
         var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
@@ -76,14 +73,20 @@ public class TransactionsServiceTests
             Amount = request.Amount
         };
 
-        _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
-        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
-
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var depositWithdrawValidator = new AddDepositWithdrawValidator();
         var expectedTransactionId = Guid.NewGuid();
         _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>())).ReturnsAsync(expectedTransactionId);
 
         // Act
-        var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, request);
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            depositWithdrawValidator,
+            _transferValidator
+        );
+
+        var result = await service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, request);
 
         // Assert
         result.Should().Be(expectedTransactionId, because: "the transaction should have been created successfully.");
@@ -104,14 +107,20 @@ public class TransactionsServiceTests
             TransactionType = TransactionType.Deposit
         };
 
-        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(It.IsAny<DepositWithdrawRequest>(), default))
-                                     .ReturnsAsync(new ValidationResult());
-        _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var depositWithdrawValidator = new AddDepositWithdrawValidator();
         var transactionId = Guid.NewGuid();
         _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>())).ReturnsAsync(transactionId);
 
         // Act
-        var result = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            depositWithdrawValidator,
+            _transferValidator
+        );
+
+        var result = await service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
 
         // Assert
         result.Should().Be(transactionId);
@@ -128,15 +137,15 @@ public class TransactionsServiceTests
     {
         // Arrange
         var request = TransactionsServiceTestData.GetDepositWithdrawRequest();
-        var validationFailures = new[] { new ValidationFailure("Amount", "Amount must be greater than zero.") };
-        _depositWithdrawValidatorMock.Setup(v => v.ValidateAsync(It.IsAny<DepositWithdrawRequest>(), default))
-                                     .ReturnsAsync(new ValidationResult(validationFailures));
+        request.Amount *= -1;
+        var depositWithdrawValidator = new AddDepositWithdrawValidator();
+        var validationResult = await depositWithdrawValidator.ValidateAsync(request);
 
         // Act
         Func<Task> act = async () => await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero.");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("The amount should not be less than 1. / Сумма не должна быть меньше 1.");
     }
 
     [Fact]
@@ -151,10 +160,17 @@ public class TransactionsServiceTests
             CurrencyType = request.CurrencyFromType,
             Amount = request.Amount * -1
         };
-        _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
+
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            _depositWithdrawValidator,
+            _transferValidator
+        );
 
         // Act
-        var result = _service.CreateWithdrawTransaction(request);
+        var result = service.CreateWithdrawTransaction(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -169,10 +185,17 @@ public class TransactionsServiceTests
     {
         // Arrange
         var request = TransactionsServiceTestData.GetValidTransferRequest();
-        var rateToUSD = 1m; // Example rate, should match setup
-        var rateFromUSD = 1 / 1.09m; // Example rate, should match setup
+        var rateToUSD = 1m;
+        var rateFromUSD = 1 / 1.09m;
         var amountUsd = request.Amount * rateToUSD;
         var expectedAmount = amountUsd * rateFromUSD;
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            _depositWithdrawValidator,
+            _transferValidator
+        );
 
         _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
         _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
@@ -184,10 +207,9 @@ public class TransactionsServiceTests
             CurrencyType = request.CurrencyToType,
             Amount = expectedAmount
         };
-        _mapperMock.Setup(m => m.Map<TransactionDto>(request)).Returns(transactionDto);
 
         // Act
-        var result = _service.CreateDepositTransaction(request);
+        var result = service.CreateDepositTransaction(request);
 
         // Assert
         result.Should().NotBeNull();
@@ -209,6 +231,7 @@ public class TransactionsServiceTests
             CurrencyType = request.CurrencyFromType,
             Amount = request.Amount * -1
         };
+
         var rateToUSD = 1m;
         var rateFromUSD = 1 / 1.09m;
         var amountUsd = request.Amount * rateToUSD;
@@ -220,7 +243,10 @@ public class TransactionsServiceTests
             CurrencyType = request.CurrencyToType,
             Amount = depositAmount
         };
-        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default)).ReturnsAsync(new ValidationResult());
+
+        var transferValidator = new AddTransferValidator();
+        _transferValidator.Validate(request);
+
         _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
         _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
 
@@ -236,8 +262,7 @@ public class TransactionsServiceTests
     {
         // Arrange
         var request = TransactionsServiceTestData.GetTransferRequest();
-        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default))
-                              .ReturnsAsync(new ValidationResult());
+        var transferValidator = new AddTransferValidator();
 
         // Act
         await _service.AddTransferTransactionAsync(request);
@@ -251,14 +276,15 @@ public class TransactionsServiceTests
     {
         // Arrange
         var request = TransactionsServiceTestData.GetTransferRequest();
-        var validationFailures = new[] { new ValidationFailure("Amount", "Amount must be greater than zero.") };
-        _transferValidatorMock.Setup(v => v.ValidateAsync(request, default))
-                              .ReturnsAsync(new ValidationResult(validationFailures));
+        request.Amount *= -1;
+        var transferValidator = new AddTransferValidator();
+        var validationFailures = transferValidator.Validate(request);
 
         // Act
         Func<Task> act = async () => await _service.AddTransferTransactionAsync(request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("Amount must be greater than zero.");
+        validationFailures.IsValid.Should().BeFalse(); // Ensure validation fails
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("The amount should not be less than 1. / Сумма не должна быть меньше 1.");
     }
 }

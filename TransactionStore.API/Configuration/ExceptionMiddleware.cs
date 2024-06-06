@@ -22,63 +22,27 @@ public class ExceptionMiddleware
         }
         catch (ValidationException ex)
         {
-            _logger.Error("Ошибка валидации / Validation error: {message}", ex.Message);
-            await HandleValidationExceptionAsync(httpContext, ex);
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.UnprocessableEntity, "Ошибка валидации. / Validation error.");
         }
         catch (NotFoundException ex)
         {
-            _logger.Error("Контент не найден / Content not found error: {message}", ex.Message);
-            await HandleNotFoundExceptionAsync(httpContext, ex);
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, "Контент не найден. / Content not found error.");
         }
         catch (ServiceUnavailableException ex)
         {
-            _logger.Error($"Ошибка {ex.Message}");
-            await HandleServiceUnavailableExceptionAsync(httpContext, ex);
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.ServiceUnavailable, "Нет соединения с базой данных. / There is no connection to the database.");
         }
         catch (Exception ex)
         {
-            _logger.Error($"Something went wrong: {ex}");
-            await HandleExceptionAsync(httpContext, ex);
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.InternalServerError, $"Something went wrong.");
         }
     }
 
-    private async Task HandleValidationExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode statusCode, string logMessage)
     {
+        _logger.Error($"{logMessage}: {exception.Message}");
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
-        await context.Response.WriteAsync(new ErrorDetails()
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = exception.Message,
-        }.ToString());
-    }
-
-    private async Task HandleNotFoundExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-        await context.Response.WriteAsync(new ErrorDetails()
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = exception.Message,
-        }.ToString());
-    }
-
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        await context.Response.WriteAsync(new ErrorDetails()
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = exception.Message,
-        }.ToString());
-    }
-
-    private async Task HandleServiceUnavailableExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+        context.Response.StatusCode = (int)statusCode;
 
         await context.Response.WriteAsync(new ErrorDetails()
         {

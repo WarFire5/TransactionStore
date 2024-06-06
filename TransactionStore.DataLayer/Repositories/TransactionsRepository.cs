@@ -13,7 +13,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
         if (!_ctx.Database.CanConnect())
         {
-            throw new ServiceUnavailableException(RepositoryExceptions.ServiceUnavailable);
+            throw new ServiceUnavailableException();
         }
     }
 
