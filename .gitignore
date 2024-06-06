@@ -365,3 +365,5 @@ FodyWeavers.xsd
 .idea/.idea.TransactionStore/.idea/
 
 TransactionStore.API/Properties/launchSettings.json
+/TransactionStore.API/appsettings.json
+/TransactionStore.API/appsettings.Development.json

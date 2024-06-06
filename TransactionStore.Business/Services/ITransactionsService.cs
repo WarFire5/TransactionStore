@@ -8,7 +8,7 @@ public interface ITransactionsService
 {
     Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id);
     Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id);
-    Task<List<TransactionWithAccountIdResponse>> GetTransactionsByLeadIdAsync(Guid id);
+    Task<List<TransactionWithAccountIdResponse>> GetTransactionsByIdAsync(Guid id);
     Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request);
     Task AddTransferTransactionAsync(TransferRequest request);
 }
