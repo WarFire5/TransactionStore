@@ -17,7 +17,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async void GetBalanceByAccountId_AccountIdSent_OkResultReceived()
+    public async Task GetBalanceByAccountId_AccountIdSent_OkResultReceived()
     {
         // Arrange
         var accountId = new Guid();
@@ -33,7 +33,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async void GetTransactionsByAccountId_AccountIdSent_OkResultReceived()
+    public async Task GetTransactionsByAccountId_AccountIdSent_OkResultReceived()
     {
         // Arrange
         var accountId = new Guid();
