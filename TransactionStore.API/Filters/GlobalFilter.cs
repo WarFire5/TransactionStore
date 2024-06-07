@@ -11,7 +11,7 @@ public class GlobalFilter : IActionFilter
     private readonly ILogger _logger = Log.ForContext<GlobalFilter>();
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        if (Convert.ToString(context.HttpContext.Request.Host) != ConfigurationSettings.CrmApiAdress)
+        if (context.HttpContext.Request.Host.ToString() != ConfigurationSettings.CrmApiAdress)
         {
             _logger.Debug($"Access from adress {context.HttpContext.Request.Host} denied.");
             throw new ForbiddenException();
