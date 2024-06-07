@@ -6,15 +6,11 @@ using TransactionStore.DataLayer.Repositories;
 
 public class TransactionsRepositoryTests
 {
-    private readonly TransactionStoreContext _transactionStoreContext;
-
-    public TransactionsRepositoryTests()
+    private DbContextOptions<TransactionStoreContext> CreateNewContextOptions()
     {
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
+        return new DbContextOptionsBuilder<TransactionStoreContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-
-        _transactionStoreContext = new TransactionStoreContext(options);
     }
 
     [Fact]
@@ -23,9 +19,7 @@ public class TransactionsRepositoryTests
         // Arrange
         var accountId = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa1");
 
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // ”никальное им€ базы данных
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
@@ -38,7 +32,7 @@ public class TransactionsRepositoryTests
             var expected = new List<TransactionDto> { transaction };
 
             // Act
-            var result = await repository.GetBalanceByAccountIdAsync(accountId);
+            var result = await repository.GetTransactionsByAccountIdAsync(accountId);
 
             // Assert
             result.Should().BeEquivalentTo(expected);
@@ -51,9 +45,7 @@ public class TransactionsRepositoryTests
         // Arrange
         var leadId = new Guid("550df504-032e-4ef7-aee2-53cf66e4d0c8");
 
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // ”никальное им€ базы данных
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
@@ -70,9 +62,6 @@ public class TransactionsRepositoryTests
 
             // Assert
             result.Should().BeEquivalentTo(expected);
-
-            // Cleanup
-            await context.Database.EnsureDeletedAsync();
         }
     }
 
@@ -80,9 +69,7 @@ public class TransactionsRepositoryTests
     public async Task AddDepositWithdrawTransaction_ValidTransaction_ReturnsId()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
@@ -101,9 +88,7 @@ public class TransactionsRepositoryTests
     public async Task AddTransferTransaction_ValidTransactions_NoExceptionsThrown()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // ”никальное им€ базы данных
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
@@ -124,9 +109,7 @@ public class TransactionsRepositoryTests
     public async Task AddDepositWithdrawTransaction_NullTransaction_ThrowsException()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
@@ -139,40 +122,21 @@ public class TransactionsRepositoryTests
     }
 
     [Fact]
-    public async Task AddTransferTransaction_NullTransferWithdraw_ThrowsException()
+    public async Task AddTransferTransaction_NullTransaction_ThrowsException()
     {
         // Arrange
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
+        var options = CreateNewContextOptions();
 
         using (var context = new TransactionStoreContext(options))
         {
             var repository = new TransactionsRepository(context);
-            var transferDeposit = new TransactionDto { Id = Guid.NewGuid() };
 
             // Act & Assert
-            Func<Task> act = async () => await repository.AddTransferTransactionAsync(null, transferDeposit);
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-    }
+            Func<Task> actWithdraw = async () => await repository.AddTransferTransactionAsync(null, new TransactionDto { Id = Guid.NewGuid() });
+            await actWithdraw.Should().ThrowAsync<ArgumentNullException>();
 
-    [Fact]
-    public async Task AddTransferTransaction_NullTransferDeposit_ThrowsException()
-    {
-        // Arrange
-        var options = new DbContextOptionsBuilder<TransactionStoreContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
-
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
-            var transferWithdraw = new TransactionDto { Id = Guid.NewGuid() };
-
-            // Act & Assert
-            Func<Task> act = async () => await repository.AddTransferTransactionAsync(transferWithdraw, null);
-            await act.Should().ThrowAsync<ArgumentNullException>();
+            Func<Task> actDeposit = async () => await repository.AddTransferTransactionAsync(new TransactionDto { Id = Guid.NewGuid() }, null);
+            await actDeposit.Should().ThrowAsync<ArgumentNullException>();
         }
     }
 }
