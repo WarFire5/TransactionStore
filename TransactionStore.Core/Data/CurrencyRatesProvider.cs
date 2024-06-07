@@ -19,7 +19,7 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
             };
     }
 
-    private string ConvertCurrencyEnumToString(Enum currencyEnum)
+    private static string ConvertCurrencyEnumToString(Enum currencyEnum)
     {
         return currencyEnum.ToString().ToUpper();
     }

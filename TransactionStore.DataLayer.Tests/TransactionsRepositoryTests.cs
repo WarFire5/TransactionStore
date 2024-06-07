@@ -1,12 +1,13 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TransactionStore.Core.DTOs;
-using TransactionStore.DataLayer;
 using TransactionStore.DataLayer.Repositories;
+
+namespace TransactionStore.DataLayer.Tests;
 
 public class TransactionsRepositoryTests
 {
-    private DbContextOptions<TransactionStoreContext> CreateNewContextOptions()
+    private static DbContextOptions<TransactionStoreContext> CreateNewContextOptions()
     {
         return new DbContextOptionsBuilder<TransactionStoreContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -19,17 +20,15 @@ public class TransactionsRepositoryTests
         // Arrange
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
-            var transaction = new TransactionDto { Id = Guid.NewGuid() };
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
+        var transaction = new TransactionDto { Id = Guid.NewGuid() };
 
-            // Act
-            var result = await repository.AddDepositWithdrawTransactionAsync(transaction);
+        // Act
+        var result = await repository.AddDepositWithdrawTransactionAsync(transaction);
 
-            // Assert
-            result.Should().Be(transaction.Id);
-        }
+        // Assert
+        result.Should().Be(transaction.Id);
     }
 
     [Fact]
@@ -38,14 +37,12 @@ public class TransactionsRepositoryTests
         // Arrange
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
 
-            // Act & Assert
-            Func<Task> act = async () => await repository.AddDepositWithdrawTransactionAsync(null);
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
+        // Act & Assert
+        Func<Task> act = async () => await repository.AddDepositWithdrawTransactionAsync(null);
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
@@ -54,19 +51,17 @@ public class TransactionsRepositoryTests
         // Arrange
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
-            var transferWithdraw = new TransactionDto { Id = Guid.NewGuid() };
-            var transferDeposit = new TransactionDto { Id = Guid.NewGuid() };
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
+        var transferWithdraw = new TransactionDto { Id = Guid.NewGuid() };
+        var transferDeposit = new TransactionDto { Id = Guid.NewGuid() };
 
-            // Act
-            await repository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+        // Act
+        await repository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
 
-            // Assert
-            var result = context.Transactions.ToList();
-            result.Count.Should().Be(2);
-        }
+        // Assert
+        var result = context.Transactions.ToList();
+        result.Count.Should().Be(2);
     }
 
     [Fact]
@@ -75,17 +70,15 @@ public class TransactionsRepositoryTests
         // Arrange
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
 
-            // Act & Assert
-            Func<Task> actWithdraw = async () => await repository.AddTransferTransactionAsync(null, new TransactionDto { Id = Guid.NewGuid() });
-            await actWithdraw.Should().ThrowAsync<ArgumentNullException>();
+        // Act & Assert
+        Func<Task> actWithdraw = async () => await repository.AddTransferTransactionAsync(null, new TransactionDto { Id = Guid.NewGuid() });
+        await actWithdraw.Should().ThrowAsync<ArgumentNullException>();
 
-            Func<Task> actDeposit = async () => await repository.AddTransferTransactionAsync(new TransactionDto { Id = Guid.NewGuid() }, null);
-            await actDeposit.Should().ThrowAsync<ArgumentNullException>();
-        }
+        Func<Task> actDeposit = async () => await repository.AddTransferTransactionAsync(new TransactionDto { Id = Guid.NewGuid() }, null);
+        await actDeposit.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
@@ -96,22 +89,20 @@ public class TransactionsRepositoryTests
 
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
 
-            var transaction = new TransactionDto { Id = leadId, AccountId = Guid.NewGuid(), Amount = 100 };
-            context.Transactions.Add(transaction);
-            await context.SaveChangesAsync();
+        var transaction = new TransactionDto { Id = leadId, AccountId = Guid.NewGuid(), Amount = 100 };
+        context.Transactions.Add(transaction);
+        await context.SaveChangesAsync();
 
-            var expected = new List<TransactionDto> { transaction };
+        var expected = new List<TransactionDto> { transaction };
 
-            // Act
-            var result = await repository.GetTransactionByIdAsync(leadId);
+        // Act
+        var result = await repository.GetTransactionByIdAsync(leadId);
 
-            // Assert
-            result.Should().BeEquivalentTo(expected);
-        }
+        // Assert
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -122,21 +113,19 @@ public class TransactionsRepositoryTests
 
         var options = CreateNewContextOptions();
 
-        using (var context = new TransactionStoreContext(options))
-        {
-            var repository = new TransactionsRepository(context);
+        using var context = new TransactionStoreContext(options);
+        var repository = new TransactionsRepository(context);
 
-            var transaction = new TransactionDto { AccountId = accountId, Amount = 100 };
-            context.Transactions.Add(transaction);
-            await context.SaveChangesAsync();
+        var transaction = new TransactionDto { AccountId = accountId, Amount = 100 };
+        context.Transactions.Add(transaction);
+        await context.SaveChangesAsync();
 
-            var expected = new List<TransactionDto> { transaction };
+        var expected = new List<TransactionDto> { transaction };
 
-            // Act
-            var result = await repository.GetTransactionsByAccountIdAsync(accountId);
+        // Act
+        var result = await repository.GetTransactionsByAccountIdAsync(accountId);
 
-            // Assert
-            result.Should().BeEquivalentTo(expected);
-        }
+        // Assert
+        result.Should().BeEquivalentTo(expected);
     }
 }

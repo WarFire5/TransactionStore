@@ -21,7 +21,7 @@ public class AccountsControllerTests
     {
         // Arrange
         var accountId = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountIdAsync(accountId)).ReturnsAsync(new List<TransactionResponse>());
+        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountIdAsync(accountId)).ReturnsAsync([]);
         var sut = new AccountsController(_transactionsServiceMock.Object);
 
         // Act

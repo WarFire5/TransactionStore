@@ -1,8 +1,5 @@
 ﻿namespace TransactionStore.Core.Exceptions;
 
-public class ServiceUnavailableException : Exception
+public class ServiceUnavailableException(string message) : Exception(message)
 {
-    public ServiceUnavailableException() : base("There is no connection to the database. / Нет соединения с базой данных.") { }
-
-    public ServiceUnavailableException(string message) : base(message) { }
 }

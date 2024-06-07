@@ -4,21 +4,15 @@ using TransactionStore.Core.Exceptions;
 
 namespace TransactionStore.API.Configuration;
 
-public class ExceptionMiddleware
+public class ExceptionMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
     private readonly Serilog.ILogger _logger = Log.ForContext<ExceptionMiddleware>();
-
-    public ExceptionMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
 
     public async Task InvokeAsync(HttpContext httpContext)
     {
         try
         {
-            await _next(httpContext);
+            await next(httpContext);
         }
         catch (ValidationException ex)
         {

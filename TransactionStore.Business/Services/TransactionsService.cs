@@ -11,31 +11,19 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService : ITransactionsService
+public class TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
+    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
+    IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
-    private readonly ITransactionsRepository _transactionsRepository;
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
-    private readonly IMapper _mapper;
-    private readonly IValidator<DepositWithdrawRequest> _addDepositWithdrawValidator;
-    private readonly IValidator<TransferRequest> _addTransferValidator;
-
-    public TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
-        IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
-        IValidator<TransferRequest> addTransferValidator)
-    {
-        _transactionsRepository = transactionsRepository;
-        _mapper = mapper;
-        _addDepositWithdrawValidator = addDepositWithdrawValidator;
-        _addTransferValidator = addTransferValidator;
-    }
 
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
-        var validationResult = await _addDepositWithdrawValidator.ValidateAsync(request);
+        var validationResult = await addDepositWithdrawValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction = _mapper.Map<TransactionDto>(request);
+            TransactionDto transaction = mapper.Map<TransactionDto>(request);
             switch (transactionType)
             {
                 case TransactionType.Deposit:
@@ -51,7 +39,7 @@ public class TransactionsService : ITransactionsService
 
             transaction.TransactionType = transactionType;
 
-            return await _transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
+            return await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -60,14 +48,14 @@ public class TransactionsService : ITransactionsService
 
     public async Task AddTransferTransactionAsync(TransferRequest request)
     {
-        var validationResult = await _addTransferValidator.ValidateAsync(request);
+        var validationResult = await addTransferValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
             var transferWithdraw = CreateWithdrawTransaction(request);
             var transferDeposit = CreateDepositTransaction(request);
 
-            await _transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+            await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
         }
         else
         {
@@ -76,7 +64,7 @@ public class TransactionsService : ITransactionsService
         }
     }
 
-    public TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    public static TransactionDto CreateWithdrawTransaction(TransferRequest request)
     {
         return new TransactionDto
         {
@@ -87,7 +75,7 @@ public class TransactionsService : ITransactionsService
         };
     }
 
-    public TransactionDto CreateDepositTransaction(TransferRequest request)
+    public static TransactionDto CreateDepositTransaction(TransferRequest request)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
@@ -106,25 +94,37 @@ public class TransactionsService : ITransactionsService
     public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionByIdAsync(id);
-        return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
+        return mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
     }
 
     public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
-        return _mapper.Map<List<TransactionResponse>>(transactions);
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
+        return mapper.Map<List<TransactionResponse>>(transactions);
     }
 
     public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
+
+        if (transactions.Count == 0)
+        {
+            _logger.Warning("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
+            return new AccountBalanceResponse
+            {
+                AccountId = id,
+                Balance = 0,
+                CurrencyType = CurrencyType.Unknown
+            };
+        }
+
         var balance = transactions.Sum(t => t.Amount);
 
         _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
-        AccountBalanceResponse accountBalance = new AccountBalanceResponse()
+        AccountBalanceResponse accountBalance = new()
         {
             AccountId = transactions[0].AccountId,
             Balance = balance,

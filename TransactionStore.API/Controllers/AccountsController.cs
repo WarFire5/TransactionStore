@@ -7,21 +7,15 @@ namespace TransactionStore.API.Controllers;
 
 [ApiController]
 [Route("/api/accounts")]
-public class AccountsController : Controller
+public class AccountsController(ITransactionsService transactionsService) : Controller
 {
-    private readonly ITransactionsService _transactionsService;
     private readonly Serilog.ILogger _logger = Log.ForContext<AccountsController>();
-
-    public AccountsController(ITransactionsService transactionsService)
-    {
-        _transactionsService = transactionsService;
-    }
 
     [HttpGet("{id}/transactions")]
     public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information($"Getting the account transactions by its Id {id}. / Получаем транзакции аккаунта по его Id {id}.");
-        var transactions = await _transactionsService.GetTransactionsByAccountIdAsync(id);
+        var transactions = await transactionsService.GetTransactionsByAccountIdAsync(id);
         return Ok(transactions);
     }
 
@@ -29,7 +23,7 @@ public class AccountsController : Controller
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
-        var balance = await _transactionsService.GetBalanceByAccountIdAsync(id);
+        var balance = await transactionsService.GetBalanceByAccountIdAsync(id);
         return Ok(balance);
     }
 }
