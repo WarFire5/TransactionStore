@@ -1,9 +1,11 @@
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TransactionStore.API.Controllers;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.API.Tests;
 
@@ -17,7 +19,7 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public async void AddDepositTransaction_ReturnsOk()
+    public async Task AddDepositTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
@@ -33,7 +35,7 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public async void AddWithdrawTransaction_ReturnsOk()
+    public async Task AddWithdrawTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
@@ -49,7 +51,7 @@ public class TransactionsControllerTests
     }
 
     [Fact]
-    public async void AddTransferTransaction_ReturnsOk()
+    public async Task AddTransferTransaction_ReturnsOk()
     {
         // Arrange
         var controller = new TransactionsController(_transactionsServiceMock.Object);
@@ -61,5 +63,21 @@ public class TransactionsControllerTests
         // Assert
         var okResult = Assert.IsType<OkResult>(result);
         Assert.Equal(200, okResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetTransactionById_IdSent_OkResultReceieved()
+    {
+        //arrange
+        var id = new Guid();
+        _transactionsServiceMock.Setup(x => x.GetTransactionByIdAsync(id)).ReturnsAsync(new List<TransactionWithAccountIdResponse>());
+        var controller = new TransactionsController(_transactionsServiceMock.Object);
+
+        //act
+        var actual = await controller.GetTransactionById(id);
+
+        //assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _transactionsServiceMock.Verify(m => m.GetTransactionByIdAsync(id), Times.Once);
     }
 }

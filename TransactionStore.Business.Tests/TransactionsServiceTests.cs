@@ -149,77 +149,6 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public async Task CreateWithdrawTransaction_ValidRequest_CorrectWithdrawTransaction()
-    {
-        // Arrange
-        var request = TransactionsServiceTestData.GetValidWithdrawRequest();
-        var transactionDto = new TransactionDto
-        {
-            AccountId = request.AccountFromId,
-            TransactionType = TransactionType.Transfer,
-            CurrencyType = request.CurrencyFromType,
-            Amount = request.Amount * -1
-        };
-
-        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
-        var service = new TransactionsService(
-            _repositoryMock.Object,
-            mapper,
-            _depositWithdrawValidator,
-            _transferValidator
-        );
-
-        // Act
-        var result = service.CreateWithdrawTransaction(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.AccountId.Should().Be(request.AccountFromId);
-        result.TransactionType.Should().Be(TransactionType.Transfer);
-        result.CurrencyType.Should().Be(request.CurrencyFromType);
-        result.Amount.Should().Be(-100);
-    }
-
-    [Fact]
-    public async Task CreateDepositTransaction_ValidRequest_CorrectDepositTransaction()
-    {
-        // Arrange
-        var request = TransactionsServiceTestData.GetValidTransferRequest();
-        var rateToUSD = 1m;
-        var rateFromUSD = 1 / 1.09m;
-        var amountUsd = request.Amount * rateToUSD;
-        var expectedAmount = amountUsd * rateFromUSD;
-        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
-        var service = new TransactionsService(
-            _repositoryMock.Object,
-            mapper,
-            _depositWithdrawValidator,
-            _transferValidator
-        );
-
-        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
-        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
-
-        var transactionDto = new TransactionDto
-        {
-            AccountId = request.AccountToId,
-            TransactionType = TransactionType.Transfer,
-            CurrencyType = request.CurrencyToType,
-            Amount = expectedAmount
-        };
-
-        // Act
-        var result = service.CreateDepositTransaction(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.AccountId.Should().Be(request.AccountToId);
-        result.TransactionType.Should().Be(TransactionType.Transfer);
-        result.CurrencyType.Should().Be(request.CurrencyToType);
-        result.Amount.Should().BeApproximately(expectedAmount, 0.0001m);
-    }
-
-    [Fact]
     public async Task AddTransferTransaction_ValidTransaction()
     {
         // Arrange
@@ -269,6 +198,77 @@ public class TransactionsServiceTests
 
         // Assert
         _repositoryMock.Verify(r => r.AddTransferTransactionAsync(It.IsAny<TransactionDto>(), It.IsAny<TransactionDto>()), Times.Once);
+    }
+
+    [Fact]
+    public void CreateWithdrawTransaction_ValidRequest_CorrectWithdrawTransaction()
+    {
+        // Arrange
+        var request = TransactionsServiceTestData.GetValidWithdrawRequest();
+        var transactionDto = new TransactionDto
+        {
+            AccountId = request.AccountFromId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyFromType,
+            Amount = request.Amount * -1
+        };
+
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            _depositWithdrawValidator,
+            _transferValidator
+        );
+
+        // Act
+        var result = service.CreateWithdrawTransaction(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.AccountId.Should().Be(request.AccountFromId);
+        result.TransactionType.Should().Be(TransactionType.Transfer);
+        result.CurrencyType.Should().Be(request.CurrencyFromType);
+        result.Amount.Should().Be(-100);
+    }
+
+    [Fact]
+    public void CreateDepositTransaction_ValidRequest_CorrectDepositTransaction()
+    {
+        // Arrange
+        var request = TransactionsServiceTestData.GetValidTransferRequest();
+        var rateToUSD = 1m;
+        var rateFromUSD = 1 / 1.09m;
+        var amountUsd = request.Amount * rateToUSD;
+        var expectedAmount = amountUsd * rateFromUSD;
+        var mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile<TransactionsMappingProfile>()));
+        var service = new TransactionsService(
+            _repositoryMock.Object,
+            mapper,
+            _depositWithdrawValidator,
+            _transferValidator
+        );
+
+        _currencyRatesProviderMock.Setup(p => p.ConvertFirstCurrencyToUsd(request.CurrencyFromType)).Returns(rateToUSD);
+        _currencyRatesProviderMock.Setup(p => p.ConvertUsdToSecondCurrency(request.CurrencyToType)).Returns(rateFromUSD);
+
+        var transactionDto = new TransactionDto
+        {
+            AccountId = request.AccountToId,
+            TransactionType = TransactionType.Transfer,
+            CurrencyType = request.CurrencyToType,
+            Amount = expectedAmount
+        };
+
+        // Act
+        var result = service.CreateDepositTransaction(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.AccountId.Should().Be(request.AccountToId);
+        result.TransactionType.Should().Be(TransactionType.Transfer);
+        result.CurrencyType.Should().Be(request.CurrencyToType);
+        result.Amount.Should().BeApproximately(expectedAmount, 0.0001m);
     }
 
     [Fact]

@@ -29,37 +29,6 @@ public class TransactionsService : ITransactionsService
         _addTransferValidator = addTransferValidator;
     }
 
-    public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
-        var balance = transactions.Sum(t => t.Amount);
-
-        _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
-        AccountBalanceResponse accountBalance = new AccountBalanceResponse()
-        {
-            AccountId = transactions[0].AccountId,
-            Balance = balance,
-            CurrencyType = transactions[0].CurrencyType
-        };
-
-        return accountBalance;
-    }
-
-    public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
-        return _mapper.Map<List<TransactionResponse>>(transactions);
-    }
-
-    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionsByLeadIdAsync(Guid id)
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByLeadIdAsync(id);
-        return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
-    }
-
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
         var validationResult = await _addDepositWithdrawValidator.ValidateAsync(request);
@@ -132,5 +101,36 @@ public class TransactionsService : ITransactionsService
             CurrencyType = request.CurrencyToType,
             Amount = amountUsd * rateFromUsd
         };
+    }
+
+    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionByIdAsync(id);
+        return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
+    }
+
+    public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
+        return _mapper.Map<List<TransactionResponse>>(transactions);
+    }
+
+    public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await _transactionsRepository.GetTransactionsByAccountIdAsync(id);
+        var balance = transactions.Sum(t => t.Amount);
+
+        _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
+        AccountBalanceResponse accountBalance = new AccountBalanceResponse()
+        {
+            AccountId = transactions[0].AccountId,
+            Balance = balance,
+            CurrencyType = transactions[0].CurrencyType
+        };
+
+        return accountBalance;
     }
 }

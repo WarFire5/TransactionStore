@@ -17,23 +17,7 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public async void GetBalanceByAccountId_AccountIdSent_OkResultReceived()
-    {
-        // Arrange
-        var accountId = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetBalanceByAccountIdAsync(accountId)).ReturnsAsync(new AccountBalanceResponse());
-        var sut = new AccountsController(_transactionsServiceMock.Object);
-
-        // Act
-        var result = await sut.GetBalanceByAccountId(accountId);
-
-        // Assert
-        result.Should().BeOfType<ActionResult<AccountBalanceResponse>>();
-        _transactionsServiceMock.Verify(m => m.GetBalanceByAccountIdAsync(accountId), Times.Once);
-    }
-
-    [Fact]
-    public async void GetTransactionsByAccountId_AccountIdSent_OkResultReceived()
+    public async Task GetTransactionsByAccountId_AccountIdSent_OkResultReceived()
     {
         // Arrange
         var accountId = new Guid();
@@ -46,5 +30,21 @@ public class AccountsControllerTests
         // Assert
         result.Should().BeOfType<ActionResult<List<TransactionResponse>>>();
         _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountIdAsync(accountId), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetBalanceByAccountId_AccountIdSent_OkResultReceived()
+    {
+        // Arrange
+        var accountId = new Guid();
+        _transactionsServiceMock.Setup(x => x.GetBalanceByAccountIdAsync(accountId)).ReturnsAsync(new AccountBalanceResponse());
+        var sut = new AccountsController(_transactionsServiceMock.Object);
+
+        // Act
+        var result = await sut.GetBalanceByAccountId(accountId);
+
+        // Assert
+        result.Should().BeOfType<ActionResult<AccountBalanceResponse>>();
+        _transactionsServiceMock.Verify(m => m.GetBalanceByAccountIdAsync(accountId), Times.Once);
     }
 }

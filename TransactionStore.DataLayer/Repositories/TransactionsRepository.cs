@@ -17,24 +17,6 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         }
     }
 
-    public async Task<List<TransactionDto>> GetBalanceByAccountIdAsync(Guid id)
-    {
-        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
-        return await _ctx.Transactions.Where(t => t.AccountId == id).ToListAsync();
-    }
-
-    public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)
-    {
-        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
-        return await _ctx.Transactions.Where(t => t.AccountId == id).ToListAsync();
-    }
-
-    public async Task<List<TransactionDto>> GetTransactionsByLeadIdAsync(Guid id)
-    {
-        _logger.Information($"Looking for transactions by leadId {id} in the database. / Ищем в базе транзакции лида с Id {id}.");
-        return await _ctx.Transactions.Where(t => t.Id == id).ToListAsync();
-    }
-
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionDto transaction)
     {
         if (transaction == null)
@@ -66,5 +48,20 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _ctx.Transactions.Add(transferWithdraw);
         _ctx.Transactions.Add(transferDeposit);
         await _ctx.SaveChangesAsync();
+    }
+
+    public async Task<List<TransactionDto>> GetTransactionByIdAsync(Guid id)
+    {
+        _logger.Information($"Looking for transaction by Id {id} in the database. / Ищем в базе транзакцию по Id {id}.");
+        var transaction = await _ctx.Transactions.AsNoTracking().Where(t => t.Id == id).FirstOrDefaultAsync();
+        var transactionDateTime = transaction.Date;
+
+        return await _ctx.Transactions.AsNoTracking().Where(t => t.Date == transactionDateTime).ToListAsync();
+    }
+
+    public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)
+    {
+        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
+        return await _ctx.Transactions.AsNoTracking().Where(t => t.AccountId == id).ToListAsync();
     }
 }

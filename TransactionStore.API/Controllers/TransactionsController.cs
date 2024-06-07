@@ -46,11 +46,11 @@ public class TransactionsController : Controller
         return Ok();
     }
 
-    [HttpGet("by-lead/{id}")]
-    public async Task<ActionResult<List<TransactionWithAccountIdResponse>>> GetTransactionsByLeadId(Guid id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<List<TransactionWithAccountIdResponse>>> GetTransactionById(Guid id)
     {
-        _logger.Information($"Getting the account transactions by leadId {id}. / Получаем список транзакций по leadId {id}.");
-        var transactions = await _transactionsService.GetTransactionsByLeadIdAsync(id);
+        _logger.Information($"Getting transaction by Id {id}. / Получаем транзакцию по Id {id}.");
+        var transactions = await _transactionsService.GetTransactionByIdAsync(id);
         return Ok(transactions);
     }
 }
