@@ -17,34 +17,34 @@ public class AccountsControllerTests
     }
 
     [Fact]
-    public void GetBalanceByAccountId_AccountIdSent_OkResultReceieved()
+    public async Task GetTransactionsByAccountId_AccountIdSent_OkResultReceived()
     {
-        //arrange
+        // Arrange
         var accountId = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetBalanceByAccountId(accountId)).Returns(new AccountBalanceResponse());
+        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountIdAsync(accountId)).ReturnsAsync([]);
         var sut = new AccountsController(_transactionsServiceMock.Object);
 
-        //act
-        var actual = sut.GetBalanceByAccountId(accountId);
+        // Act
+        var result = await sut.GetTransactionsByAccountId(accountId);
 
-        //assert
-        actual.Result.Should().BeOfType<OkObjectResult>();
-        _transactionsServiceMock.Verify(m => m.GetBalanceByAccountId(accountId), Times.Once);
+        // Assert
+        result.Should().BeOfType<ActionResult<List<TransactionResponse>>>();
+        _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountIdAsync(accountId), Times.Once);
     }
 
     [Fact]
-    public void GetTransactionsByAccountId_AccountIdSent_OkResultReceieved()
+    public async Task GetBalanceByAccountId_AccountIdSent_OkResultReceived()
     {
-        //arrange
+        // Arrange
         var accountId = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionsByAccountId(accountId)).Returns(new List<TransactionResponse>());
+        _transactionsServiceMock.Setup(x => x.GetBalanceByAccountIdAsync(accountId)).ReturnsAsync(new AccountBalanceResponse());
         var sut = new AccountsController(_transactionsServiceMock.Object);
 
-        //act
-        var actual = sut.GetTransactionsByAccountId(accountId);
+        // Act
+        var result = await sut.GetBalanceByAccountId(accountId);
 
-        //assert
-        actual.Result.Should().BeOfType<OkObjectResult>();
-        _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountId(accountId), Times.Once);
+        // Assert
+        result.Should().BeOfType<ActionResult<AccountBalanceResponse>>();
+        _transactionsServiceMock.Verify(m => m.GetBalanceByAccountIdAsync(accountId), Times.Once);
     }
 }

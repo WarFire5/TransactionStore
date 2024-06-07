@@ -11,62 +11,19 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService : ITransactionsService
+public class TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
+    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
+    IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
-    private readonly ITransactionsRepository _transactionsRepository;
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
-    private readonly IMapper _mapper;
-    private readonly IValidator<DepositWithdrawRequest> _addDepositWithdrawValidator;
-    private readonly IValidator<TransferRequest> _addTransferValidator;
 
-    public TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
-        IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
-        IValidator<TransferRequest> addTransferValidator)
+    public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
-        _transactionsRepository = transactionsRepository;
-        _mapper = mapper;
-        _addDepositWithdrawValidator = addDepositWithdrawValidator;
-        _addTransferValidator = addTransferValidator;
-    }
-
-    public AccountBalanceResponse GetBalanceByAccountId(Guid id)
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
-        var balance = transactions.Sum(t => t.Amount);
-
-        _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
-        AccountBalanceResponse accountBalance = new AccountBalanceResponse()
-        {
-            AccountId = transactions[0].AccountId,
-            Balance = balance,
-            CurrencyType = transactions[0].CurrencyType
-        };
-       
-        return accountBalance;
-    }
-
-    public List<TransactionResponse> GetTransactionsByAccountId(Guid id) 
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByAccountId(id);
-        return _mapper.Map<List<TransactionResponse>>(transactions);
-    }
-
-    public List<TransactionWithAccountIdResponse> GetTransactionsByLeadId(Guid id)
-    {
-        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
-        List<TransactionDto> transactions = _transactionsRepository.GetTransactionsByLeadId(id);
-        return _mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
-    }
-
-    public Guid AddDepositWithdrawTransaction(TransactionType transactionType, DepositWithdrawRequest request)
-    {
-        var validationResult = _addDepositWithdrawValidator.Validate(request);
+        var validationResult = await addDepositWithdrawValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
-            TransactionDto transaction = _mapper.Map<TransactionDto>(request);
+            TransactionDto transaction = mapper.Map<TransactionDto>(request);
             switch (transactionType)
             {
                 case TransactionType.Deposit:
@@ -82,23 +39,23 @@ public class TransactionsService : ITransactionsService
 
             transaction.TransactionType = transactionType;
 
-            return _transactionsRepository.AddDepositWithdrawTransaction(transaction);
+            return await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
         throw new ValidationException(exceptions);
     }
 
-    public void AddTransferTransaction(TransferRequest request)
+    public async Task AddTransferTransactionAsync(TransferRequest request)
     {
-        var validationResult = _addTransferValidator.Validate(request);
+        var validationResult = await addTransferValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
             var transferWithdraw = CreateWithdrawTransaction(request);
             var transferDeposit = CreateDepositTransaction(request);
 
-            _transactionsRepository.AddTransferTransaction(transferWithdraw, transferDeposit);
+            await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
         }
         else
         {
@@ -107,7 +64,7 @@ public class TransactionsService : ITransactionsService
         }
     }
 
-    public TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    public static TransactionDto CreateWithdrawTransaction(TransferRequest request)
     {
         return new TransactionDto
         {
@@ -118,7 +75,7 @@ public class TransactionsService : ITransactionsService
         };
     }
 
-    public TransactionDto CreateDepositTransaction(TransferRequest request)
+    public static TransactionDto CreateDepositTransaction(TransferRequest request)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
@@ -132,5 +89,48 @@ public class TransactionsService : ITransactionsService
             CurrencyType = request.CurrencyToType,
             Amount = amountUsd * rateFromUsd
         };
+    }
+
+    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
+        return mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
+    }
+
+    public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
+        return mapper.Map<List<TransactionResponse>>(transactions);
+    }
+
+    public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
+    {
+        _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
+        List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
+
+        if (transactions.Count == 0)
+        {
+            _logger.Warning("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
+            return new AccountBalanceResponse
+            {
+                AccountId = id,
+                Balance = 0,
+                CurrencyType = CurrencyType.Unknown
+            };
+        }
+
+        var balance = transactions.Sum(t => t.Amount);
+
+        _logger.Information("Counting and transmitting the balance. / Считаем и передаем баланс.");
+        AccountBalanceResponse accountBalance = new()
+        {
+            AccountId = transactions[0].AccountId,
+            Balance = balance,
+            CurrencyType = transactions[0].CurrencyType
+        };
+
+        return accountBalance;
     }
 }

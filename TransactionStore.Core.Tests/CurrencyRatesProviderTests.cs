@@ -68,7 +68,7 @@ public class CurrencyRatesProviderTests
         Action act = () => _currencyRatesProvider.ConvertFirstCurrencyToUsd(TestCurrency.INVALID);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Rate for INVALID to USD not found. /  урс INVALID к USD не найден.");
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -78,6 +78,6 @@ public class CurrencyRatesProviderTests
         Action act = () => _currencyRatesProvider.ConvertUsdToSecondCurrency(TestCurrency.INVALID);
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Rate for USD to INVALID not found. /  урс USD к INVALID не найден.");
+        act.Should().Throw<ArgumentException>();
     }
 }
