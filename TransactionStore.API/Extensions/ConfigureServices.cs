@@ -1,3 +1,4 @@
+using MassTransit;
 using TransactionStore.API.Filters;
 using TransactionStore.Core.Models;
 
@@ -16,5 +17,9 @@ public static class ConfigureServices
         services.AddSwaggerGen();
         services.ConfigureDataBase(configurationManager);
         services.AddAutoMapper(typeof(TransactionsMappingProfile));
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq();
+        });
     }
 }

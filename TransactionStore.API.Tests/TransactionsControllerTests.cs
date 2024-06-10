@@ -5,6 +5,7 @@ using TransactionStore.API.Controllers;
 using TransactionStore.Business.Services;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.API.Tests;
 
@@ -72,6 +73,22 @@ public class TransactionsControllerTests
         var actual = await controller.GetTransactionById(id);
 
         // Assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _transactionsServiceMock.Verify(m => m.GetTransactionByIdAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTransactionById_IdSent_OkResultReceieved()
+    {
+        //arrange
+        var id = new Guid();
+        _transactionsServiceMock.Setup(x => x.GetTransactionByIdAsync(id)).ReturnsAsync(new List<TransactionWithAccountIdResponse>());
+        var controller = new TransactionsController(_transactionsServiceMock.Object);
+
+        //act
+        var actual = await controller.GetTransactionById(id);
+
+        //assert
         actual.Result.Should().BeOfType<OkObjectResult>();
         _transactionsServiceMock.Verify(m => m.GetTransactionByIdAsync(id), Times.Once);
     }
