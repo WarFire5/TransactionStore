@@ -26,6 +26,10 @@ public class ExceptionMiddleware(RequestDelegate next)
         {
             await HandleExceptionAsync(httpContext, ex, HttpStatusCode.ServiceUnavailable, "Нет соединения с базой данных. / There is no connection to the database.");
         }
+        catch (ForbiddenException ex)
+        {
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Доступ запрещен. /Access denied.");
+        }
         catch (Exception ex)
         {
             await HandleExceptionAsync(httpContext, ex, HttpStatusCode.InternalServerError, $"Something went wrong.");
