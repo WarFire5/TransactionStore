@@ -65,11 +65,17 @@ public class TransactionsServiceTests
         depositResult.Should().Be(depositId);
         withdrawResult.Should().Be(withdrawId);
 
-        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
-            t.TransactionType == TransactionType.Deposit && t.Amount == depositRequest.Amount)), Times.Once);
+        var depositCommission = depositRequest.Amount * 0.05m;
+        var expectedDepositAmount = depositRequest.Amount - depositCommission;
+
+        var withdrawCommission = withdrawRequest.Amount * 0.10m;
+        var expectedWithdrawAmount = -(withdrawRequest.Amount + withdrawCommission);
 
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
-            t.TransactionType == TransactionType.Withdraw && t.Amount == -withdrawRequest.Amount)), Times.Once);
+            t.TransactionType == TransactionType.Deposit && t.Amount == expectedDepositAmount)), Times.Once);
+
+        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
+            t.TransactionType == TransactionType.Withdraw && t.Amount == expectedWithdrawAmount)), Times.Once);
     }
 
     [Fact]

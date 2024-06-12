@@ -24,13 +24,19 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         if (validationResult.IsValid)
         {
             TransactionDto transaction = mapper.Map<TransactionDto>(request);
+
+            var commissionsProvider = new CommissionsProvider();
+            var commissionPercent = commissionsProvider.GetPercentForTransaction(transactionType);
+            var commissionAmount = transaction.Amount * commissionPercent / 100;
+
             switch (transactionType)
             {
                 case TransactionType.Deposit:
+                    transaction.Amount -= commissionAmount;
                     break;
 
                 case TransactionType.Withdraw:
-                    transaction.Amount *= -1;
+                    transaction.Amount = -(transaction.Amount + commissionAmount);
                     break;
 
                 default:
@@ -46,7 +52,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         throw new ValidationException(exceptions);
     }
 
-    public async Task AddTransferTransactionAsync(TransferRequest request)
+    public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransferRequest request)
     {
         var validationResult = await addTransferValidator.ValidateAsync(request);
 
@@ -55,7 +61,8 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var transferWithdraw = CreateWithdrawTransaction(request);
             var transferDeposit = CreateDepositTransaction(request);
 
-            await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+            var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+            return response;
         }
         else
         {
