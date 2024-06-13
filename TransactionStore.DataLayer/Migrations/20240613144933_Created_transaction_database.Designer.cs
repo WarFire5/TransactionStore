@@ -13,8 +13,8 @@ using TransactionStore.DataLayer;
 namespace TransactionStore.DataLayer.Migrations
 {
     [DbContext(typeof(TransactionStoreContext))]
-    [Migration("20240613143234_Created transaction database")]
-    partial class Createdtransactiondatabase
+    [Migration("20240613144933_Created_transaction_database")]
+    partial class Created_transaction_database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

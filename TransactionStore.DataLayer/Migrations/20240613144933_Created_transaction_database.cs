@@ -7,7 +7,7 @@ using TransactionStore.Core.Enums;
 namespace TransactionStore.DataLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class Createdtransactiondatabase : Migration
+    public partial class Created_transaction_database : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
