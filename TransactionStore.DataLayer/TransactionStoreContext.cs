@@ -11,7 +11,6 @@ public class TransactionStoreContext(DbContextOptions<TransactionStoreContext> o
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresEnum<CurrencyType>();
         modelBuilder.HasPostgresEnum<TransactionType>();
 
         modelBuilder.Entity<TransactionDto>(ConfigureTransactionDto);

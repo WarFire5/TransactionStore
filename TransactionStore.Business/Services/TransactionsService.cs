@@ -81,7 +81,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
-            CurrencyType = request.CurrencyFromType,
             Amount = request.Amount * -1 - commissionAmount
         };
     }
@@ -97,7 +96,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         {
             AccountId = request.AccountToId,
             TransactionType = TransactionType.Transfer,
-            CurrencyType = request.CurrencyToType,
             Amount = amountUsd * rateFromUsd
         };
     }
@@ -128,7 +126,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             {
                 AccountId = id,
                 Balance = 0,
-                CurrencyType = CurrencyType.Unknown
+                CurrencyType = Currency.Unknown
             };
         }
 
@@ -138,8 +136,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         AccountBalanceResponse accountBalance = new()
         {
             AccountId = transactions[0].AccountId,
-            Balance = balance,
-            CurrencyType = transactions[0].CurrencyType
+            Balance = balance
         };
 
         return accountBalance;

@@ -251,7 +251,6 @@ public class TransactionsServiceTests
         result.Should().BeOfType<AccountBalanceResponse>();
         result.AccountId.Should().Be(accountId);
         result.Balance.Should().Be(expectedBalance);
-        result.CurrencyType.Should().Be(transactions[0].CurrencyType);
     }
 
     [Fact]

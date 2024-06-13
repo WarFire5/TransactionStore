@@ -19,14 +19,14 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
             };
     }
 
-    private static string ConvertCurrencyTypeEnumToString(Enum currencyType)
+    private static string ConvertCurrencyEnumToString(Enum currencyNumber)
     {
-        return currencyType.ToString().ToUpper();
+        return currencyNumber.ToString().ToUpper();
     }
 
-    public decimal ConvertFirstCurrencyToUsd(Enum currencyType)
+    public decimal ConvertFirstCurrencyToUsd(Enum currencyNumber)
     {
-        var currency = ConvertCurrencyTypeEnumToString(currencyType);
+        var currency = ConvertCurrencyEnumToString(currencyNumber);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             return rateToUsd;
@@ -34,9 +34,9 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         throw new ArgumentException($"Rate for {currency} to USD not found. / Курс {currency} к USD не найден.");
     }
 
-    public decimal ConvertUsdToSecondCurrency(Enum currencyType)
+    public decimal ConvertUsdToSecondCurrency(Enum currencyNumber)
     {
-        var currency = ConvertCurrencyTypeEnumToString(currencyType);
+        var currency = ConvertCurrencyEnumToString(currencyNumber);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             return 1 / rateToUsd;
