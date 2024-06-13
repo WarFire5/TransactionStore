@@ -20,7 +20,6 @@ public static class DataBaseExtensions
                 .UseSnakeCaseNamingConvention()
         );
 
-        NpgsqlConnection.GlobalTypeMapper.MapEnum<Currency>();
         NpgsqlConnection.GlobalTypeMapper.MapEnum<TransactionType>();
     }
 
