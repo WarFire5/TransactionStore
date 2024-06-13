@@ -58,7 +58,11 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         if (validationResult.IsValid)
         {
-            var transferWithdraw = CreateWithdrawTransaction(request);
+            var commissionsProvider = new CommissionsProvider();
+            var commissionPercent = commissionsProvider.GetPercentForTransaction(TransactionType.Transfer);
+            var commissionAmount = request.Amount * commissionPercent / 100;
+
+            var transferWithdraw = CreateWithdrawTransaction(request, commissionAmount);
             var transferDeposit = CreateDepositTransaction(request);
 
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
@@ -71,14 +75,14 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         }
     }
 
-    public static TransactionDto CreateWithdrawTransaction(TransferRequest request)
+    public static TransactionDto CreateWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
         return new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
             CurrencyType = request.CurrencyFromType,
-            Amount = request.Amount * -1
+            Amount = request.Amount * -1 - commissionAmount
         };
     }
 

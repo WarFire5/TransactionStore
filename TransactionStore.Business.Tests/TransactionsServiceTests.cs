@@ -119,11 +119,14 @@ public class TransactionsServiceTests
     {
         // Arrange
         var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
-        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest);
+        var commissionPercent = new CommissionsProvider().GetPercentForTransaction(TransactionType.Transfer);
+        var commissionAmount = transferRequest.Amount * commissionPercent / 100;
+
+        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
         var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest);
 
         // Act
-        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest);
+        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest, commissionAmount);
         var depositTransaction = TransactionsService.CreateDepositTransaction(transferRequest);
 
         // Assert

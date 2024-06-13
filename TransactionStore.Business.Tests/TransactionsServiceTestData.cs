@@ -46,14 +46,14 @@ public static class TransactionsServiceTestData
         Amount = 0
     };
 
-    public static TransactionDto CreateExpectedWithdrawTransaction(TransferRequest request)
+    public static TransactionDto CreateExpectedWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
         return new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
             CurrencyType = request.CurrencyFromType,
-            Amount = request.Amount * -1
+            Amount = request.Amount * -1 - commissionAmount
         };
     }
 
