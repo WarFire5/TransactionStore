@@ -8,14 +8,14 @@ public static class TransactionsControllerTestData
     public static DepositWithdrawRequest GetDepositRequest() => new()
     {
         AccountId = Guid.NewGuid(),
-        CurrencyType = CurrencyType.USD,
+        CurrencyType = Currency.USD,
         Amount = 100
     };
 
     public static DepositWithdrawRequest GetWithdrawRequest() => new()
     {
         AccountId = Guid.NewGuid(),
-        CurrencyType = CurrencyType.USD,
+        CurrencyType = Currency.USD,
         Amount = 100
     };
 
@@ -23,8 +23,8 @@ public static class TransactionsControllerTestData
     {
         AccountFromId = Guid.NewGuid(),
         AccountToId = Guid.NewGuid(),
-        CurrencyFromType = CurrencyType.RUB,
-        CurrencyToType = CurrencyType.EUR,
+        CurrencyFromType = Currency.RUB,
+        CurrencyToType = Currency.EUR,
         Amount = 100
     };
 }

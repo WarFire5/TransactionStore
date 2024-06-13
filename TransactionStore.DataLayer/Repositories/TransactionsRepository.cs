@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
+using TransactionStore.Core.Models.Responses;
 
 namespace TransactionStore.DataLayer.Repositories;
 
@@ -32,7 +33,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         return transaction.Id;
     }
 
-    public async Task AddTransferTransactionAsync(TransactionDto transferWithdraw, TransactionDto transferDeposit)
+    public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransactionDto transferWithdraw, TransactionDto transferDeposit)
     {
         if (transferWithdraw == null)
         {
@@ -45,9 +46,15 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         }
 
         _logger.Information($"Recording the transfer-transactions in the database. / Записываем транзакции в базу.");
-        _ctx.Transactions.Add(transferWithdraw);
-        _ctx.Transactions.Add(transferDeposit);
+        await _ctx.Transactions.AddAsync(transferWithdraw);
+        await _ctx.Transactions.AddAsync(transferDeposit);
         await _ctx.SaveChangesAsync();
+
+        return new TransferGuidsResponse
+        {
+            TransferWithdrawId = transferWithdraw.Id,
+            TransferDepositId = transferDeposit.Id
+        };
     }
 
     public async Task<List<TransactionDto>> GetTransactionByIdAsync(Guid id)

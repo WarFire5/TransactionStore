@@ -13,8 +13,8 @@ using TransactionStore.DataLayer;
 namespace TransactionStore.DataLayer.Migrations
 {
     [DbContext(typeof(TransactionStoreContext))]
-    [Migration("20240524183922_CreatedDataBase")]
-    partial class CreatedDataBase
+    [Migration("20240613143234_Created transaction database")]
+    partial class Createdtransactiondatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,6 @@ namespace TransactionStore.DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "currency_type", new[] { "unknown", "rub", "usd", "eur", "jpy", "cny", "rsd", "bgn", "ars" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "transaction_type", new[] { "unknown", "deposit", "withdraw", "transfer" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -42,10 +41,6 @@ namespace TransactionStore.DataLayer.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(11, 4)")
                         .HasColumnName("amount");
-
-                    b.Property<CurrencyType>("CurrencyType")
-                        .HasColumnType("currency_type")
-                        .HasColumnName("currency_type");
 
                     b.Property<DateTime>("Date")
                         .ValueGeneratedOnAdd()

@@ -65,11 +65,17 @@ public class TransactionsServiceTests
         depositResult.Should().Be(depositId);
         withdrawResult.Should().Be(withdrawId);
 
-        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
-            t.TransactionType == TransactionType.Deposit && t.Amount == depositRequest.Amount)), Times.Once);
+        var depositCommission = depositRequest.Amount * 0.05m;
+        var expectedDepositAmount = depositRequest.Amount - depositCommission;
+
+        var withdrawCommission = withdrawRequest.Amount * 0.10m;
+        var expectedWithdrawAmount = -(withdrawRequest.Amount + withdrawCommission);
 
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
-            t.TransactionType == TransactionType.Withdraw && t.Amount == -withdrawRequest.Amount)), Times.Once);
+            t.TransactionType == TransactionType.Deposit && t.Amount == expectedDepositAmount)), Times.Once);
+
+        _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
+            t.TransactionType == TransactionType.Withdraw && t.Amount == expectedWithdrawAmount)), Times.Once);
     }
 
     [Fact]
@@ -113,11 +119,14 @@ public class TransactionsServiceTests
     {
         // Arrange
         var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
-        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest);
+        var commissionPercent = new CommissionsProvider().GetPercentForTransaction(TransactionType.Transfer);
+        var commissionAmount = transferRequest.Amount * commissionPercent / 100;
+
+        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
         var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest);
 
         // Act
-        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest);
+        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest, commissionAmount);
         var depositTransaction = TransactionsService.CreateDepositTransaction(transferRequest);
 
         // Assert
@@ -242,7 +251,6 @@ public class TransactionsServiceTests
         result.Should().BeOfType<AccountBalanceResponse>();
         result.AccountId.Should().Be(accountId);
         result.Balance.Should().Be(expectedBalance);
-        result.CurrencyType.Should().Be(transactions[0].CurrencyType);
     }
 
     [Fact]

@@ -2,6 +2,6 @@
 
 public interface ICurrencyRatesProvider
 {
-    decimal ConvertFirstCurrencyToUsd(Enum currencyEnum);
-    decimal ConvertUsdToSecondCurrency(Enum currencyEnum);
+    decimal ConvertFirstCurrencyToUsd(Enum currencyType);
+    decimal ConvertUsdToSecondCurrency(Enum currencyType);
 }

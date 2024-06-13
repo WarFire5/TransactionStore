@@ -19,28 +19,28 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
             };
     }
 
-    private static string ConvertCurrencyEnumToString(Enum currencyEnum)
+    private static string ConvertCurrencyEnumToString(Enum currencyNumber)
     {
-        return currencyEnum.ToString().ToUpper();
+        return currencyNumber.ToString().ToUpper();
     }
 
-    public decimal ConvertFirstCurrencyToUsd(Enum currencyEnum)
+    public decimal ConvertFirstCurrencyToUsd(Enum currencyNumber)
     {
-        var currency = ConvertCurrencyEnumToString(currencyEnum);
+        var currency = ConvertCurrencyEnumToString(currencyNumber);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             return rateToUsd;
         }
-        throw new ArgumentException($"Rate for {currency} to USD not found. / Κσπρ {currency} κ USD νε νΰιδεν.");
+        throw new ArgumentException($"Rate for {currency} to USD not found. / ΠΡƒΡ€Ρ {currency} ΠΊ USD Π½Πµ Π½Π°ΠΉΠ΄ΠµΠ½.");
     }
 
-    public decimal ConvertUsdToSecondCurrency(Enum currencyEnum)
+    public decimal ConvertUsdToSecondCurrency(Enum currencyNumber)
     {
-        var currency = ConvertCurrencyEnumToString(currencyEnum);
+        var currency = ConvertCurrencyEnumToString(currencyNumber);
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             return 1 / rateToUsd;
         }
-        throw new ArgumentException($"Rate for USD to {currency} not found. / Κσπρ USD κ {currency} νε νΰιδεν.");
+        throw new ArgumentException($"Rate for USD to {currency} not found. / ΠΡƒΡ€Ρ USD ΠΊ {currency} Π½Πµ Π½Π°ΠΉΠ΄ΠµΠ½.");
     }
 }

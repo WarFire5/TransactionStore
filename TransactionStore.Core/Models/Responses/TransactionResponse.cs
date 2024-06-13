@@ -6,7 +6,7 @@ public class TransactionResponse
 {
     public Guid AccountId { get; set; }
     public TransactionType TransactionType { get; set; }
-    public CurrencyType CurrencyType { get; set; }
+    public Currency CurrencyType { get; set; }
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
 }

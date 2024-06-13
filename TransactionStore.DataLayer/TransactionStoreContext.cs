@@ -5,17 +5,12 @@ using TransactionStore.Core.Enums;
 
 namespace TransactionStore.DataLayer;
 
-public class TransactionStoreContext : DbContext
+public class TransactionStoreContext(DbContextOptions<TransactionStoreContext> options) : DbContext(options)
 {
     public DbSet<TransactionDto> Transactions { get; set; }
 
-    public TransactionStoreContext(DbContextOptions<TransactionStoreContext> options) : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresEnum<CurrencyType>();
         modelBuilder.HasPostgresEnum<TransactionType>();
 
         modelBuilder.Entity<TransactionDto>(ConfigureTransactionDto);
