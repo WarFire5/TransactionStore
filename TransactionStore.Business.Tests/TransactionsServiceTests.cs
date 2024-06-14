@@ -24,6 +24,7 @@ public class TransactionsServiceTests
     private readonly IValidator<TransferRequest> _transferValidator;
     private readonly IMapper _mapper;
     private readonly TransactionsService _service;
+    private readonly IMessagesService _messagesService;
 
     public TransactionsServiceTests()
     {
@@ -35,6 +36,7 @@ public class TransactionsServiceTests
 
         _service = new TransactionsService(
             _repositoryMock.Object,
+            _messagesService,
             _mapper,
             _depositWithdrawValidator,
             _transferValidator

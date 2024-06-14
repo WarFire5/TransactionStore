@@ -11,7 +11,7 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
+public class TransactionsService(ITransactionsRepository transactionsRepository, IMessagesService messagesService, IMapper mapper,
     IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
     IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
@@ -45,7 +45,12 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
             transaction.TransactionType = transactionType;
 
-            return await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
+            var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
+            var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transactionId);
+
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount);
+
+            return transactionId;
         }
 
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
@@ -66,6 +71,11 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var transferDeposit = CreateDepositTransaction(request);
 
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+
+            var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transferWithdraw.Id);
+
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount);
+
             return response;
         }
         else
@@ -126,7 +136,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             {
                 AccountId = id,
                 Balance = 0,
-                CurrencyType = Currency.Unknown
             };
         }
 

@@ -62,6 +62,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         _logger.Information($"Looking for transaction by Id {id} in the database. / Ищем в базе транзакцию по Id {id}.");
         var transaction = await _ctx.Transactions.AsNoTracking().Where(t => t.Id == id).FirstOrDefaultAsync();
         var transactionDateTime = transaction.Date;
+        var accountId = transaction.AccountId;
 
         return await _ctx.Transactions.AsNoTracking().Where(t => t.Date == transactionDateTime).ToListAsync();
     }
