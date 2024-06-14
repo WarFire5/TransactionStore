@@ -19,16 +19,7 @@ public static class ConfigureServices
         services.AddAutoMapper(typeof(TransactionsMappingProfile));
         services.AddMassTransit(x =>
         {
-            x.UsingRabbitMq((context, configurator) =>
-            {
-                configurator.Host("localhost", "/", h =>
-                {
-                    h.Username("guest");
-                    h.Password("guest");
-                });
-
-                configurator.ConfigureEndpoints(context);
-            });
+            x.UsingRabbitMq();
         });
     }
 }
