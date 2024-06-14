@@ -28,7 +28,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
         catch (ForbiddenException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Доступ запрещен. /Access denied.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Доступ запрещен. / Access denied.");
         }
         catch (Exception ex)
         {

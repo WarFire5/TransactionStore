@@ -49,6 +49,16 @@ public class TransactionsControllerTests
     public async Task AddTransferTransaction_ReturnsCreated()
     {
         // Arrange
+        var transferGuidsResponse = new TransferGuidsResponse
+        {
+            TransferWithdrawId = Guid.NewGuid(),
+            TransferDepositId = Guid.NewGuid()
+        };
+
+        _transactionsServiceMock
+            .Setup(service => service.AddTransferTransactionAsync(It.IsAny<TransferRequest>()))
+            .ReturnsAsync(transferGuidsResponse);
+
         var controller = new TransactionsController(_transactionsServiceMock.Object);
         var request = TransactionsControllerTestData.GetTransferRequest();
 
@@ -56,9 +66,10 @@ public class TransactionsControllerTests
         var result = await controller.AddTransferTransaction(request);
 
         // Assert
-        var statusCodeResult = result as StatusCodeResult;
-        statusCodeResult.Should().NotBeNull();
-        statusCodeResult.StatusCode.Should().Be(201);
+        var createdResult = result.Result as CreatedResult;
+        createdResult.Should().NotBeNull();
+        createdResult.StatusCode.Should().Be(201);
+        createdResult.Value.Should().BeEquivalentTo(transferGuidsResponse);
     }
 
     [Fact]

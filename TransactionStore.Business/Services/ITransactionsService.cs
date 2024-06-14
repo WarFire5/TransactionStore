@@ -7,7 +7,7 @@ namespace TransactionStore.Business.Services;
 public interface ITransactionsService
 {
     Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request);
-    Task AddTransferTransactionAsync(TransferRequest request);
+    Task<TransferGuidsResponse> AddTransferTransactionAsync(TransferRequest request);
     Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id);
     Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id);
     Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id);
