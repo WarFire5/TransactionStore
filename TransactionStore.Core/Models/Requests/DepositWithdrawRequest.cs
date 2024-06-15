@@ -6,5 +6,5 @@ public class DepositWithdrawRequest
 {
     public Guid AccountId { get; set; }
     public Currency CurrencyType { get; set; }
-    public int Amount { get; set; }
+    public decimal Amount { get; set; }
 }
