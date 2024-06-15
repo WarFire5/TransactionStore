@@ -126,8 +126,8 @@ public class TransactionsServiceTests
         var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest);
 
         // Act
-        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest, commissionAmount);
-        var depositTransaction = TransactionsService.CreateDepositTransaction(transferRequest);
+        var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);
+        var depositTransaction = _service.CreateDepositTransaction(transferRequest);
 
         // Assert
         withdrawTransaction.Should().BeEquivalentTo(expectedWithdrawTransaction);
