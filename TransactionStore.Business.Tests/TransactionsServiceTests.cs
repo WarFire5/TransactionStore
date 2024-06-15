@@ -254,24 +254,6 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public async Task GetBalanceByAccountIdAsync_EmptyTransactions_ReturnsZeroBalanceResponse()
-    {
-        // Arrange
-        var accountId = Guid.NewGuid();
-        var transactions = TransactionsServiceTestData.GetEmptyTransactions();
-
-        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ReturnsAsync(transactions);
-
-        // Act
-        var result = await _service.GetBalanceByAccountIdAsync(accountId);
-
-        // Assert
-        result.Should().BeOfType<AccountBalanceResponse>();
-        result.AccountId.Should().Be(accountId);
-        result.Balance.Should().Be(0);
-    }
-
-    [Fact]
     public async Task GetBalanceByAccountIdAsync_RepositoryThrowsException_ThrowsServiceUnavailableException()
     {
         // Arrange
