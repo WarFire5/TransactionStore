@@ -123,34 +123,24 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
     {
-        _logger.Information($"Fetching transaction by ID {id}. / Получение транзакции по ID {id}.");
+        _logger.Information($"Getting transaction by ID {id}. / Получение транзакции по ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
         return mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
     }
 
     public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
     {
-        _logger.Information($"Fetching transactions for account with ID {id}. / Получение транзакций для аккаунта с ID {id}.");
+        _logger.Information($"Getting transactions for account with ID {id}. / Получение транзакций для аккаунта с ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
         return mapper.Map<List<TransactionResponse>>(transactions);
     }
 
     public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
     {
-        _logger.Information($"Fetching balance for account with ID {id}. / Получение баланса для аккаунта с ID {id}.");
+        _logger.Information($"Getting a list of transactions for account with ID {id}. / Получение списка транзакций для аккаунта с ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
 
-        if (transactions.Count == 0)
-        {
-            _logger.Information($"No transactions found for account with ID {id}. Returning zero balance. / Для аккаунта с ID {id} не найдено транзакций. Возвращение нулевого баланса.");
-            return new AccountBalanceResponse
-            {
-                AccountId = id,
-                Balance = 0,
-                CurrencyType = Currency.Unknown
-            };
-        }
-
+        _logger.Information($"Getting balance for account with ID {id}. / Получение баланса для аккаунта с ID {id}.");
         var balance = transactions.Sum(t => t.Amount);
 
         _logger.Information($"For an account with ID {id} the balance was calculated - {balance}. / Для аккаунта с ID {id} рассчитан баланс - {balance}.");
