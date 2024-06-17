@@ -69,7 +69,7 @@ public class TransactionsServiceTests
         var expectedDepositAmount = depositRequest.Amount - depositCommission;
 
         var withdrawCommission = withdrawRequest.Amount * 0.10m;
-        var expectedWithdrawAmount = -(withdrawRequest.Amount + withdrawCommission);
+        var expectedWithdrawAmount = -(withdrawRequest.Amount - withdrawCommission);
 
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.TransactionType == TransactionType.Deposit && t.Amount == expectedDepositAmount)), Times.Once);
@@ -123,14 +123,15 @@ public class TransactionsServiceTests
         var commissionAmount = transferRequest.Amount * commissionPercent / 100;
 
         var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
-        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest);
+        var withdrawAmount = transferRequest.Amount - commissionAmount;
+        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest, withdrawAmount);
 
         // Act
         var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);
-        var depositTransaction = _service.CreateDepositTransaction(transferRequest);
+        var depositTransaction = _service.CreateDepositTransaction(transferRequest, withdrawAmount);
 
         // Assert
-        withdrawTransaction.Should().BeEquivalentTo(expectedWithdrawTransaction);
+        withdrawTransaction.Item1.Should().BeEquivalentTo(expectedWithdrawTransaction);
         depositTransaction.Should().BeEquivalentTo(expectedDepositTransaction);
     }
 

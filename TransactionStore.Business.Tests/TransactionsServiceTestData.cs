@@ -48,19 +48,20 @@ public static class TransactionsServiceTestData
 
     public static TransactionDto CreateExpectedWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
+        var withdrawAmount = request.Amount - commissionAmount;
         return new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
-            Amount = request.Amount * -1 - commissionAmount
+            Amount = -withdrawAmount
         };
     }
 
-    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request)
+    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
-        var amountUsd = request.Amount * rateToUSD;
+        var amountUsd = withdrawAmount * rateToUSD;
         var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
 
         return new TransactionDto

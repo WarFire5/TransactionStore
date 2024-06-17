@@ -43,7 +43,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
                 case TransactionType.Withdraw:
                     _logger.Information("Adding commission amount to withdrawal transaction amount and making it negative. / Добавление суммы комиссии к сумме транзакции снятия и преобразование суммы в отрицательное значение.");
-                    transaction.Amount = -(transaction.Amount + commissionAmount);
+                    transaction.Amount = -(transaction.Amount - commissionAmount);
                     break;
 
                 default:
@@ -76,10 +76,10 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var commissionAmount = request.Amount * commissionPercent / 100;
 
             _logger.Information("Creating the withdraw transaction with commission. / Создание транзакции снятия с учетом комиссии.");
-            var transferWithdraw = CreateWithdrawTransaction(request, commissionAmount);
+            var (transferWithdraw, withdrawAmount) = CreateWithdrawTransaction(request, commissionAmount);
 
             _logger.Information("Creating the deposit transaction. / Создание транзакции пополнения.");
-            var transferDeposit = CreateDepositTransaction(request);
+            var transferDeposit = CreateDepositTransaction(request, withdrawAmount);
 
             _logger.Information("Adding the transfer transaction to the repository and getting the response. / Добавление транзакции перевода в репозиторий и получение ответа.");
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
@@ -93,23 +93,24 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         }
     }
 
-    public TransactionDto CreateWithdrawTransaction(TransferRequest request, decimal commissionAmount)
+    public (TransactionDto, decimal) CreateWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
         _logger.Information("Creating withdraw transaction DTO. / Создание DTO для транзакции снятия.");
-        return new TransactionDto
+        var withdrawAmount = request.Amount - commissionAmount;
+        return (new TransactionDto
         {
             AccountId = request.AccountFromId,
             TransactionType = TransactionType.Transfer,
-            Amount = request.Amount * -1 - commissionAmount
-        };
+            Amount = -withdrawAmount
+        }, withdrawAmount);
     }
 
-    public TransactionDto CreateDepositTransaction(TransferRequest request)
+    public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
         _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
         var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
-        var amountUsd = request.Amount * rateToUSD;
+        var amountUsd = withdrawAmount * rateToUSD;
         var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
 
         _logger.Information("Creating deposit transaction DTO. / Создание DTO для транзакции пополнения.");
