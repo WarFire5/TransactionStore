@@ -41,7 +41,7 @@ public class TransactionsController(ITransactionsService transactionsService) : 
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<List<TransactionWithAccountIdResponse>>> GetTransactionById(Guid id)
+    public async Task<ActionResult<FullTransactionResponse>> GetTransactionById(Guid id)
     {
         _logger.Information($"Getting transaction by Id {id}. / Получаем транзакцию по Id {id}.");
         var transactions = await transactionsService.GetTransactionByIdAsync(id);

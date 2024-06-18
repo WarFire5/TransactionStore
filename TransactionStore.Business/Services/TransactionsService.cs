@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using MassTransit.Internals;
 using Serilog;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
@@ -110,11 +111,41 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         };
     }
 
-    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
+    public async Task<FullTransactionResponse> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information("Calling the repository method. / Вызываем метод репозитория.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
-        return mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
+        var transactionResponse = new FullTransactionResponse();
+
+        if (transactions[0].TransactionType == TransactionType.Transfer) 
+        {
+            transactionResponse.Id = transactions[1].Id;
+            transactionResponse.AccountFromId = transactions[1].AccountId;
+            transactionResponse.AccountToId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[1].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+
+        else if (transactions[0].TransactionType == TransactionType.Deposit)
+        {
+            transactionResponse.Id = transactions[0].Id;
+            transactionResponse.AccountToId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[0].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+
+        else if (transactions[0].TransactionType == TransactionType.Withdraw)
+        {
+            transactionResponse.Id = transactions[0].Id;
+            transactionResponse.AccountFromId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[0].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+
+        return transactionResponse;
     }
 
     public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)

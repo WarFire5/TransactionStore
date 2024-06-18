@@ -60,11 +60,19 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     public async Task<List<TransactionDto>> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information($"Looking for transaction by Id {id} in the database. / Ищем в базе транзакцию по Id {id}.");
-        var transaction = await _ctx.Transactions.AsNoTracking().Where(t => t.Id == id).FirstOrDefaultAsync();
-        var transactionDateTime = transaction.Date;
-        var accountId = transaction.AccountId;
+        var transaction = await _ctx.Transactions.AsNoTracking().Where(t => t.Id == id).ToListAsync();
 
-        return await _ctx.Transactions.AsNoTracking().Where(t => t.Date == transactionDateTime).ToListAsync();
+        if (transaction[0].TransactionType == Core.Enums.TransactionType.Transfer)
+        {
+            var transactionDateTime = transaction[0].Date;
+
+            return await _ctx.Transactions.AsNoTracking().Where(t => t.Date == transactionDateTime).ToListAsync();
+        }
+
+        else
+        {
+            return transaction;
+        }
     }
 
     public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)

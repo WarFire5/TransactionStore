@@ -199,7 +199,7 @@ public class TransactionsServiceTests
         var result = await _service.GetTransactionsByAccountIdAsync(accountId);
 
         // Assert
-        result.Should().BeEquivalentTo(_mapper.Map<List<TransactionResponse>>(transactions));
+        result.Should().BeEquivalentTo(_mapper.Map<List<FullTransactionResponse>>(transactions));
         _repositoryMock.Verify(r => r.GetTransactionsByAccountIdAsync(accountId), Times.Once);
     }
 
