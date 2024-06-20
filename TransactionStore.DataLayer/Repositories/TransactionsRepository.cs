@@ -3,6 +3,7 @@ using Serilog;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
 using TransactionStore.Core.Models.Responses;
+using ArgumentNullException = TransactionStore.Core.Exceptions.ArgumentNullException;
 
 namespace TransactionStore.DataLayer.Repositories;
 
@@ -14,6 +15,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
         if (!_ctx.Database.CanConnect())
         {
+            _logger.Error("Throwing an error if there is no connection to the database. / Выдача ошибки, если нет соединения с базой данных.");
             throw new ServiceUnavailableException("There is no connection to the database. / Нет соединения с базой данных.");
         }
     }
@@ -22,10 +24,11 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
         if (transaction == null)
         {
-            throw new ArgumentNullException(nameof(transaction), "Transaction cannot be null. / Транзакция не может быть нулевой.");
+            _logger.Information("Throwing an error if the transaction is null. / Выдача ошибки, если транзакция равна null.");
+            throw new ArgumentNullException("Transaction cannot be null. / Транзакция не может быть нулевой.");
         }
 
-        _logger.Information($"Recording the transaction in the database. / Записываем транзакцию в базу.");
+        _logger.Information($"Saving the transaction in the database. / Сохранение транзакции в базе.");
         _ctx.Transactions.Add(transaction);
         await _ctx.SaveChangesAsync();
 
@@ -37,19 +40,22 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
     {
         if (transferWithdraw == null)
         {
-            throw new ArgumentNullException(nameof(transferWithdraw), "Transfer-withdraw transaction cannot be null. / Транзакция на перевод-снятие не может быть нулевой.");
+            _logger.Information("Throwing an error if the transfer-withdraw transaction is null. / Выдача ошибки, если транзакция на перевод-снятие равна null.");
+            throw new ArgumentNullException("Transfer-withdraw transaction cannot be null. / Транзакция на перевод-снятие не может быть нулевой.");
         }
 
         if (transferDeposit == null)
         {
-            throw new ArgumentNullException(nameof(transferDeposit), "Transfer-deposit transaction cannot be null. / Транзакция на перевод-пополнение не может быть нулевой.");
+            _logger.Information("Throwing an error if the transfer-deposit is null. / Выдача ошибки, если транзакция на перевод-пополнение равна null.");
+            throw new ArgumentNullException("Transfer-deposit transaction cannot be null. / Транзакция на перевод-пополнение не может быть нулевой.");
         }
 
-        _logger.Information($"Recording the transfer-transactions in the database. / Записываем транзакции в базу.");
+        _logger.Information($"Registering and saving the records of the transfer transaction in the database. / Регистрируем и сохраняем записи о трансферной транзакции в базе.");
         await _ctx.Transactions.AddAsync(transferWithdraw);
         await _ctx.Transactions.AddAsync(transferDeposit);
         await _ctx.SaveChangesAsync();
 
+        _logger.Information($"Returning transfer-withdraw Id {transferWithdraw.Id} and transfer-deposit Id {transferDeposit.Id}. / Возвращаем Id {transferWithdraw.Id} перевода-cнятия и Id {transferDeposit.Id} перевода-пополнения.");
         return new TransferGuidsResponse
         {
             TransferWithdrawId = transferWithdraw.Id,
@@ -77,7 +83,15 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
     public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)
     {
-        _logger.Information($"Looking for transactions by accountId {id} in the database. / Ищем в базе транзакции аккаунта с Id {id}.");
-        return await _ctx.Transactions.AsNoTracking().Where(t => t.AccountId == id).ToListAsync();
+        _logger.Information($"Returning information about transactions of the account with Id {id}. / Возвращаем информацию о транзакциях аккаунта с Id {id}.");
+        var transactions = await _ctx.Transactions.AsNoTracking().Where(t => t.AccountId == id).ToListAsync();
+
+        if (transactions == null || transactions.Count == 0)
+        {
+            _logger.Warning($"Throwing an error if transactions for account with Id {id} not found. / Транзакции для аккаунта с Id {id} не найдены.");
+            throw new NotFoundException($"No transactions found for account with Id {id}. / Транзакции для аккаунта с Id {id} не найдены.");
+        }
+
+        return transactions;
     }
 }

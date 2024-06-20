@@ -25,24 +25,22 @@ public static class DataBaseExtensions
 
     public static async Task MigrateAndReloadPostgresTypesAsync(this IServiceProvider serviceProvider, CancellationToken token = default)
     {
-        using (var scope = serviceProvider.CreateScope())
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransactionStoreContext>();
+
+        await dbContext.Database.MigrateAsync(token);
+
+        if (dbContext.Database.GetDbConnection() is NpgsqlConnection npgsqlConnection)
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TransactionStoreContext>();
+            await npgsqlConnection.OpenAsync(token);
 
-            await dbContext.Database.MigrateAsync(token);
-
-            if (dbContext.Database.GetDbConnection() is NpgsqlConnection npgsqlConnection)
+            try
             {
-                await npgsqlConnection.OpenAsync(token);
-
-                try
-                {
-                    await npgsqlConnection.ReloadTypesAsync();
-                }
-                finally
-                {
-                    await npgsqlConnection.CloseAsync();
-                }
+                await npgsqlConnection.ReloadTypesAsync();
+            }
+            finally
+            {
+                await npgsqlConnection.CloseAsync();
             }
         }
     }

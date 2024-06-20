@@ -71,29 +71,13 @@ public class TransactionsControllerTests
         createdResult.StatusCode.Should().Be(201);
         createdResult.Value.Should().BeEquivalentTo(transferGuidsResponse);
     }
-
-    [Fact]
-    public async Task GetTransactionById_IdSent_OkResultReceived()
-    {
-        // Arrange
-        var id = Guid.NewGuid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionByIdAsync(id)).ReturnsAsync([]);
-        var controller = new TransactionsController(_transactionsServiceMock.Object);
-
-        // Act
-        var actual = await controller.GetTransactionById(id);
-
-        // Assert
-        actual.Result.Should().BeOfType<OkObjectResult>();
-        _transactionsServiceMock.Verify(m => m.GetTransactionByIdAsync(id), Times.Once);
-    }
-
+   
     [Fact]
     public async Task GetTransactionById_IdSent_OkResultReceieved()
     {
         //arrange
         var id = new Guid();
-        _transactionsServiceMock.Setup(x => x.GetTransactionByIdAsync(id)).ReturnsAsync(new List<TransactionWithAccountIdResponse>());
+        _transactionsServiceMock.Setup(x => x.GetTransactionByIdAsync(id)).ReturnsAsync(new FullTransactionResponse());
         var controller = new TransactionsController(_transactionsServiceMock.Object);
 
         //act

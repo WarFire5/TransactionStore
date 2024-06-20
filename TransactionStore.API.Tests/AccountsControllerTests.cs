@@ -28,7 +28,7 @@ public class AccountsControllerTests
         var result = await sut.GetTransactionsByAccountId(accountId);
 
         // Assert
-        result.Should().BeOfType<ActionResult<List<FullTransactionResponse>>>();
+        result.Should().BeOfType<ActionResult<List<TransactionResponse>>>();
         _transactionsServiceMock.Verify(m => m.GetTransactionsByAccountIdAsync(accountId), Times.Once);
     }
 

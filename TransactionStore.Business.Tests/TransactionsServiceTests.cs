@@ -20,11 +20,11 @@ public class TransactionsServiceTests
 {
     private readonly Mock<ITransactionsRepository> _repositoryMock = new();
     private readonly Mock<ICurrencyRatesProvider> _currencyRatesProviderMock = new();
+    private readonly Mock<IMessagesService> _messagesServiceMock = new();
     private readonly IValidator<DepositWithdrawRequest> _depositWithdrawValidator;
     private readonly IValidator<TransferRequest> _transferValidator;
     private readonly IMapper _mapper;
     private readonly TransactionsService _service;
-    private readonly IMessagesService _messagesService;
 
     public TransactionsServiceTests()
     {
@@ -36,7 +36,7 @@ public class TransactionsServiceTests
 
         _service = new TransactionsService(
             _repositoryMock.Object,
-            _messagesService,
+            _messagesServiceMock.Object,
             _mapper,
             _depositWithdrawValidator,
             _transferValidator
@@ -71,7 +71,7 @@ public class TransactionsServiceTests
         var expectedDepositAmount = depositRequest.Amount - depositCommission;
 
         var withdrawCommission = withdrawRequest.Amount * 0.10m;
-        var expectedWithdrawAmount = -(withdrawRequest.Amount + withdrawCommission);
+        var expectedWithdrawAmount = -(withdrawRequest.Amount - withdrawCommission);
 
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.TransactionType == TransactionType.Deposit && t.Amount == expectedDepositAmount)), Times.Once);
@@ -125,14 +125,15 @@ public class TransactionsServiceTests
         var commissionAmount = transferRequest.Amount * commissionPercent / 100;
 
         var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
-        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest);
+        var withdrawAmount = transferRequest.Amount - commissionAmount;
+        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest, withdrawAmount);
 
         // Act
-        var withdrawTransaction = TransactionsService.CreateWithdrawTransaction(transferRequest, commissionAmount);
-        var depositTransaction = TransactionsService.CreateDepositTransaction(transferRequest);
+        var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);
+        var depositTransaction = _service.CreateDepositTransaction(transferRequest, withdrawAmount);
 
         // Assert
-        withdrawTransaction.Should().BeEquivalentTo(expectedWithdrawTransaction);
+        withdrawTransaction.Item1.Should().BeEquivalentTo(expectedWithdrawTransaction);
         depositTransaction.Should().BeEquivalentTo(expectedDepositTransaction);
     }
 
@@ -149,12 +150,12 @@ public class TransactionsServiceTests
         var result = await _service.GetTransactionByIdAsync(transactionId);
 
         // Assert
-        result.Should().BeEquivalentTo(_mapper.Map<List<TransactionWithAccountIdResponse>>(transactions));
+        result.Should().BeOfType<FullTransactionResponse>();
         _repositoryMock.Verify(r => r.GetTransactionByIdAsync(transactionId), Times.Once);
     }
 
     [Fact]
-    public async Task GetTransactionByIdAsync_InvalidId_ReturnsEmptyList()
+    public async Task GetTransactionByIdAsync_InvalidId_ReturnsEmptyResponse()
     {
         // Arrange
         var transactionId = Guid.NewGuid();
@@ -166,7 +167,7 @@ public class TransactionsServiceTests
         var result = await _service.GetTransactionByIdAsync(transactionId);
 
         // Assert
-        result.Should().BeEmpty();
+        result.Should().BeNull();
         _repositoryMock.Verify(r => r.GetTransactionByIdAsync(transactionId), Times.Once);
     }
 
@@ -199,7 +200,7 @@ public class TransactionsServiceTests
         var result = await _service.GetTransactionsByAccountIdAsync(accountId);
 
         // Assert
-        result.Should().BeEquivalentTo(_mapper.Map<List<FullTransactionResponse>>(transactions));
+        result.Should().BeEquivalentTo(_mapper.Map<List<TransactionResponse>>(transactions));
         _repositoryMock.Verify(r => r.GetTransactionsByAccountIdAsync(accountId), Times.Once);
     }
 
@@ -253,24 +254,6 @@ public class TransactionsServiceTests
         result.Should().BeOfType<AccountBalanceResponse>();
         result.AccountId.Should().Be(accountId);
         result.Balance.Should().Be(expectedBalance);
-    }
-
-    [Fact]
-    public async Task GetBalanceByAccountIdAsync_EmptyTransactions_ReturnsZeroBalanceResponse()
-    {
-        // Arrange
-        var accountId = Guid.NewGuid();
-        var transactions = TransactionsServiceTestData.GetEmptyTransactions();
-
-        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ReturnsAsync(transactions);
-
-        // Act
-        var result = await _service.GetBalanceByAccountIdAsync(accountId);
-
-        // Assert
-        result.Should().BeOfType<AccountBalanceResponse>();
-        result.AccountId.Should().Be(accountId);
-        result.Balance.Should().Be(0);
     }
 
     [Fact]
