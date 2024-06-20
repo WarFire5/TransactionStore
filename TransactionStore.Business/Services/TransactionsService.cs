@@ -1,6 +1,5 @@
 using AutoMapper;
 using FluentValidation;
-using MassTransit.Internals;
 using Serilog;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
@@ -138,7 +137,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
         var transactionResponse = new FullTransactionResponse();
 
-        if (transactions[0].TransactionType == TransactionType.Transfer) 
+        if (transactions[0].TransactionType == TransactionType.Transfer)
         {
             transactionResponse.Id = transactions[1].Id;
             transactionResponse.AccountFromId = transactions[1].AccountId;

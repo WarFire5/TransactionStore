@@ -1,25 +1,27 @@
+using Messaging.Shared;
 using Serilog;
+using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Core.Data;
 
 public class CurrencyRatesProvider : ICurrencyRatesProvider
 {
-    private readonly Dictionary<string, decimal> _rates;
+    private Dictionary<string, decimal> _rates;
     private readonly ILogger _logger = Log.ForContext<CurrencyRatesProvider>();
 
     public CurrencyRatesProvider()
     {
-        _rates = new Dictionary<string, decimal>()
-            {
-                { "USD", 1m },
-                { "RUB", 0.011m },
-                { "EUR", 1.09m },
-                { "JPY", 0.0064m },
-                { "CNY", 0.14m },
-                { "RSD", 0.0093m },
-                { "BGN", 0.56m },
-                { "ARS", 0.0011m }
-            };
+        //_rates = new Dictionary<string, decimal>()
+        //    {
+        //        { "USD", 1m },
+        //        { "RUB", 0.011m },
+        //        { "EUR", 1.09m },
+        //        { "JPY", 0.0064m },
+        //        { "CNY", 0.14m },
+        //        { "RSD", 0.0093m },
+        //        { "BGN", 0.56m },
+        //        { "ARS", 0.0011m }
+        //    };
     }
 
     private static string ConvertCurrencyEnumToString(Enum currencyNumber)
@@ -49,5 +51,11 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         }
         _logger.Error($"Throwing an error if rate for USD to {currency} not found. / Выдача ошибки, если курс USD к {currency} не найден.");
         throw new ArgumentException($"Rate for USD to {currency} not found. / Курс USD к {currency} не найден.");
+    }
+
+    public void SetRates(RatesInfo rates)
+    {
+        _logger.Information("Rates updated at "+DateTime.Now.ToString("dd.MM.yyyy HH.mm.ss"));
+        _rates = rates.Rates;
     }
 }

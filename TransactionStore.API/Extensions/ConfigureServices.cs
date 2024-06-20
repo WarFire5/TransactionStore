@@ -1,5 +1,7 @@
 using MassTransit;
+using TransactionStore.API.Consumers;
 using TransactionStore.API.Filters;
+using TransactionStore.Core.Data;
 using TransactionStore.Core.Models;
 
 namespace TransactionStore.API.Extensions;
@@ -19,7 +21,17 @@ public static class ConfigureServices
         services.AddAutoMapper(typeof(TransactionsMappingProfile));
         services.AddMassTransit(x =>
         {
-            x.UsingRabbitMq();
+            x.AddConsumer<RatesInfoConsumer>();
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("rabbitmq://localhost");
+
+                cfg.ReceiveEndpoint("currency_rates", e =>
+                {
+                    e.ConfigureConsumer<RatesInfoConsumer>(context);
+                });
+            });
         });
+        services.AddScoped<ICurrencyRatesProvider, CurrencyRatesProvider>();
     }
 }
