@@ -10,21 +10,21 @@ public static class TransactionsServiceTestData
     public static DepositWithdrawRequest GetValidDepositRequest(Guid accountId) => new()
     {
         AccountId = accountId,
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 100
     };
 
     public static DepositWithdrawRequest GetValidWithdrawRequest(Guid accountId) => new()
     {
         AccountId = accountId,
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 100
     };
 
     public static DepositWithdrawRequest GetInvalidDepositWithdrawRequest() => new()
     {
         AccountId = Guid.NewGuid(),
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 0
     };
 
@@ -32,8 +32,8 @@ public static class TransactionsServiceTestData
     {
         AccountFromId = Guid.NewGuid(),
         AccountToId = Guid.NewGuid(),
-        CurrencyFromType = Currency.USD,
-        CurrencyToType = Currency.EUR,
+        CurrencyFrom = Currency.USD,
+        CurrencyTo = Currency.EUR,
         Amount = 100
     };
 
@@ -41,8 +41,8 @@ public static class TransactionsServiceTestData
     {
         AccountFromId = Guid.NewGuid(),
         AccountToId = Guid.NewGuid(),
-        CurrencyFromType = Currency.RUB,
-        CurrencyToType = Currency.EUR,
+        CurrencyFrom = Currency.RUB,
+        CurrencyTo = Currency.EUR,
         Amount = 0
     };
 
@@ -60,9 +60,9 @@ public static class TransactionsServiceTestData
     public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
         var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
+        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
-        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
+        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
 
         return new TransactionDto
         {

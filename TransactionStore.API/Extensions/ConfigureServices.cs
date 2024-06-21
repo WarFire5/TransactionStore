@@ -24,8 +24,6 @@ public static class ConfigureServices
             x.AddConsumer<RatesInfoConsumer>();
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("rabbitmq://localhost");
-
                 cfg.ReceiveEndpoint("currency_rates", e =>
                 {
                     e.ConfigureConsumer<RatesInfoConsumer>(context);

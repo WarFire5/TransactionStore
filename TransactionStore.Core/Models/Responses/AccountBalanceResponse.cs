@@ -1,5 +1,3 @@
-using TransactionStore.Core.Enums;
-
 namespace TransactionStore.Core.Models.Responses;
 
 public class AccountBalanceResponse
