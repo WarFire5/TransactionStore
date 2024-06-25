@@ -1,11 +1,7 @@
-using MassTransit;
 using Serilog;
 using TransactionStore.API.Configuration;
-using TransactionStore.API.Consumers;
-using TransactionStore.API.Controllers;
 using TransactionStore.API.Extensions;
 using TransactionStore.Business;
-using TransactionStore.Business.Services;
 using TransactionStore.DataLayer;
 
 try
@@ -23,14 +19,6 @@ try
     builder.Services.ConfigureDalServices();
 
     builder.Host.UseSerilog();
-
-    //var busControl = Bus.Factory.CreateUsingRabbitMq(cfg =>
-    //{
-    //    cfg.ReceiveEndpoint("order-created-event", e =>
-    //    {
-    //        e.ConfigureConsumer<RatesInfoConsumer>(context);
-    //    });
-    //});
 
     var app = builder.Build();
 

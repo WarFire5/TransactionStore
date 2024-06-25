@@ -19,23 +19,17 @@ public class MessagesService : IMessagesService
     {
         foreach (var t in transactions)
         {
-            var id = t.Id;
-            var accountId = t.AccountId;
-            var transactionType = t.TransactionType;
-            var amount = t.Amount;
-            var date = t.Date;
-
-            _logger.Information("Sending transaction info to RabbitMQ. / Отправляем информацию о транзакции в RabbitMQ.");
-
             _publish = _publishEndpoint.Publish<TransactionCreated>(new
             {
-                Id = id,
-                AccountId = accountId,
-                TransactionType = transactionType,
-                Amount = amount,
-                Comission = comissionAmount,
-                Date = date,
+                t.Id,
+                t.AccountId,
+                t.TransactionType,
+                t.Amount,
+                Comission=comissionAmount,
+                t.Date,
             });
+
+            _logger.Information("Sending transaction info to RabbitMQ. / Отправляем информацию о транзакции в RabbitMQ.");
         }
             await Task.WhenAll(_publish);
     }

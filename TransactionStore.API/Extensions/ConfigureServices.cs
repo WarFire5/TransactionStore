@@ -30,6 +30,6 @@ public static class ConfigureServices
                 });
             });
         });
-        services.AddScoped<ICurrencyRatesProvider, CurrencyRatesProvider>();
+        services.AddSingleton<ICurrencyRatesProvider, CurrencyRatesProvider>();
     }
 }

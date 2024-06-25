@@ -11,7 +11,7 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, IMessagesService messagesService, IMapper mapper,
+public class TransactionsService(ITransactionsRepository transactionsRepository, IMessagesService messagesService, ICurrencyRatesProvider currencyRatesProvider, IMapper mapper,
     IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
     IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
@@ -117,7 +117,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
         _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
-        var currencyRatesProvider = new CurrencyRatesProvider();
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
         var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
@@ -182,7 +181,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         if (transactions.Count == 0)
         {
-            _logger.Warning("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
+            _logger.Information("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
             return new AccountBalanceResponse
             {
                 AccountId = id,

@@ -1,6 +1,5 @@
 using Messaging.Shared;
 using Serilog;
-using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Core.Data;
 
@@ -11,17 +10,6 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
 
     public CurrencyRatesProvider()
     {
-        //_rates = new Dictionary<string, decimal>()
-        //    {
-        //        { "USD", 1m },
-        //        { "RUB", 0.011m },
-        //        { "EUR", 1.09m },
-        //        { "JPY", 0.0064m },
-        //        { "CNY", 0.14m },
-        //        { "RSD", 0.0093m },
-        //        { "BGN", 0.56m },
-        //        { "ARS", 0.0011m }
-        //    };
     }
 
     private static string ConvertCurrencyEnumToString(Enum currencyNumber)
@@ -32,6 +20,11 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
     public decimal ConvertFirstCurrencyToUsd(Enum currencyNumber)
     {
         var currency = ConvertCurrencyEnumToString(currencyNumber);
+        if (_rates== null) 
+        {
+            _logger.Error("Error, currency rates not found.");
+            throw new ArgumentException("Error, currency rates not found.");
+        }
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             _logger.Information($"Returning rate {currency} to USD - {rateToUsd}. / Возврат курса {currency} к USD – {rateToUsd}");
@@ -55,7 +48,8 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
 
     public void SetRates(RatesInfo rates)
     {
-        _logger.Information("Rates updated at "+DateTime.Now.ToString("dd.MM.yyyy HH.mm.ss"));
+        _logger.Information("Rates updated at " + DateTime.Now.ToString("dd.MM.yyyy HH.mm.ss"));
         _rates = rates.Rates;
+        _logger.Information($"{_rates}");
     }
 }

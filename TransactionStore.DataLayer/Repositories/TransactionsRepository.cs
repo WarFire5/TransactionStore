@@ -88,7 +88,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
         if (transactions == null || transactions.Count == 0)
         {
-            _logger.Warning($"Throwing an error if transactions for account with Id {id} not found. / Транзакции для аккаунта с Id {id} не найдены.");
+            _logger.Information($"Throwing an error if transactions for account with Id {id} not found. / Транзакции для аккаунта с Id {id} не найдены.");
             throw new NotFoundException($"No transactions found for account with Id {id}. / Транзакции для аккаунта с Id {id} не найдены.");
         }
 
