@@ -7,13 +7,12 @@ using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
 using TransactionStore.DataLayer.Repositories;
-using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, IMessagesService messagesService, ICurrencyRatesProvider currencyRatesProvider, IMapper mapper,
-    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
-    IValidator<TransferRequest> addTransferValidator) : ITransactionsService
+public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider, ICommissionsProvider commissionsProvider,
+    IMapper mapper, IMessagesService messagesService,
+    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
 
@@ -134,6 +133,13 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
     {
         _logger.Information($"Getting transaction by ID {id}. / Получение транзакции по ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
+
+        if (transactions == null || transactions.Count == 0)
+        {
+            _logger.Warning($"Transactions for ID {id} not found. / Транзакции для ID {id} не найдены.");
+            return null;
+        }
+
         var transactionResponse = new FullTransactionResponse();
 
         if (transactions[0].TransactionType == TransactionType.Transfer)
@@ -145,7 +151,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             transactionResponse.Amount = transactions[1].Amount;
             transactionResponse.Date = transactions[0].Date;
         }
-
         else if (transactions[0].TransactionType == TransactionType.Deposit)
         {
             transactionResponse.Id = transactions[0].Id;
@@ -154,7 +159,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             transactionResponse.Amount = transactions[0].Amount;
             transactionResponse.Date = transactions[0].Date;
         }
-
         else if (transactions[0].TransactionType == TransactionType.Withdraw)
         {
             transactionResponse.Id = transactions[0].Id;

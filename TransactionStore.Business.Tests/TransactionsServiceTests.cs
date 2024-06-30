@@ -12,7 +12,6 @@ using TransactionStore.Core.Models;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
 using TransactionStore.DataLayer.Repositories;
-using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Tests;
 
@@ -20,6 +19,7 @@ public class TransactionsServiceTests
 {
     private readonly Mock<ITransactionsRepository> _repositoryMock = new();
     private readonly Mock<ICurrencyRatesProvider> _currencyRatesProviderMock = new();
+    private readonly Mock<ICommissionsProvider> _commissionsProviderMock = new();
     private readonly Mock<IMessagesService> _messagesServiceMock = new();
     private readonly IValidator<DepositWithdrawRequest> _depositWithdrawValidator;
     private readonly IValidator<TransferRequest> _transferValidator;
@@ -36,8 +36,10 @@ public class TransactionsServiceTests
 
         _service = new TransactionsService(
             _repositoryMock.Object,
-            _messagesServiceMock.Object,
+            _currencyRatesProviderMock.Object,
+            _commissionsProviderMock.Object,
             _mapper,
+            _messagesServiceMock.Object,
             _depositWithdrawValidator,
             _transferValidator
         );
@@ -87,9 +89,9 @@ public class TransactionsServiceTests
         var invalidRequest = TransactionsServiceTestData.GetInvalidDepositWithdrawRequest();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(() =>
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() =>
             _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, invalidRequest));
-        await Assert.ThrowsAsync<ValidationException>(() =>
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() =>
             _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, invalidRequest));
     }
 
@@ -113,7 +115,7 @@ public class TransactionsServiceTests
         var invalidTransferRequest = TransactionsServiceTestData.GetInvalidTransferRequest();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(() => _service.AddTransferTransactionAsync(invalidTransferRequest));
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() => _service.AddTransferTransactionAsync(invalidTransferRequest));
     }
 
     [Fact]
@@ -121,12 +123,20 @@ public class TransactionsServiceTests
     {
         // Arrange
         var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
-        var commissionPercent = new CommissionsProvider().GetPercentForTransaction(TransactionType.Transfer);
+        var commissionPercent = TransactionsServiceTestData.GetCommissionPercent();
         var commissionAmount = transferRequest.Amount * commissionPercent / 100;
+        var withdrawAmount = transferRequest.Amount - commissionAmount;
+        var (rateToUSD, rateFromUsd) = TransactionsServiceTestData.GetCurrencyRates();
+
+        _commissionsProviderMock.Setup(x => x.GetPercentForTransaction(TransactionType.Transfer))
+                                .Returns(commissionPercent);
+        _currencyRatesProviderMock.Setup(x => x.ConvertFirstCurrencyToUsd(transferRequest.CurrencyFrom))
+                                  .Returns(rateToUSD);
+        _currencyRatesProviderMock.Setup(x => x.ConvertUsdToSecondCurrency(transferRequest.CurrencyTo))
+                                  .Returns(rateFromUsd);
 
         var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
-        var withdrawAmount = transferRequest.Amount - commissionAmount;
-        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest, withdrawAmount);
+        var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest, withdrawAmount, rateToUSD, rateFromUsd);
 
         // Act
         var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);

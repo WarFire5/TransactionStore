@@ -1,5 +1,4 @@
-﻿using TransactionStore.Core.Data;
-using TransactionStore.Core.DTOs;
+﻿using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 
@@ -46,6 +45,10 @@ public static class TransactionsServiceTestData
         Amount = 0
     };
 
+    public static decimal GetCommissionPercent() => 1.5m;
+
+    public static (decimal rateToUSD, decimal rateFromUsd) GetCurrencyRates() => (1.1m, 0.9m);
+
     public static TransactionDto CreateExpectedWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
         var withdrawAmount = request.Amount - commissionAmount;
@@ -57,13 +60,9 @@ public static class TransactionsServiceTestData
         };
     }
 
-    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount)
+    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount, decimal rateToUSD, decimal rateFromUsd)
     {
-        var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
-        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
-
         return new TransactionDto
         {
             AccountId = request.AccountToId,

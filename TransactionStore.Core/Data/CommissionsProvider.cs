@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Core.Data;
 
@@ -11,11 +10,11 @@ public class CommissionsProvider : ICommissionsProvider
     public CommissionsProvider()
     {
         _percent = new Dictionary<string, decimal>()
-            {
-                { "DEPOSIT", 5m },
-                { "WITHDRAW", 10m },
-                { "TRANSFER", 7.5m }
-            };
+        {
+            { "DEPOSIT", 5m },
+            { "WITHDRAW", 10m },
+            { "TRANSFER", 7.5m }
+        };
     }
 
     private static string ConvertTransactionEnumToString(Enum transactionType)

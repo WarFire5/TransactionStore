@@ -32,7 +32,7 @@ try
 
     app.MapControllers();
 
-    Log.Information("Running up");
+    Log.Information("Running up.");
     await app.RunAsync();
 }
 catch (Exception ex)

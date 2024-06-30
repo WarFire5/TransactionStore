@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Exceptions;
 using TransactionStore.DataLayer.Repositories;
-using ArgumentNullException = TransactionStore.Core.Exceptions.ArgumentNullException;
 
 namespace TransactionStore.DataLayer.Tests;
 
@@ -30,7 +29,7 @@ public class TransactionsRepositoryTests
     public async Task AddDepositWithdrawTransaction_ValidTransaction_ReturnsId()
     {
         // Arrange
-        var (context, repository) = await InitializeContextAndRepositoryAsync();
+        var (_, repository) = await InitializeContextAndRepositoryAsync();
         var transaction = new TransactionDto { Id = Guid.NewGuid() };
 
         // Act
@@ -48,7 +47,7 @@ public class TransactionsRepositoryTests
 
         // Act & Assert
         Func<Task> act = async () => await repository.AddDepositWithdrawTransactionAsync(null);
-        await act.Should().ThrowAsync<ArgumentNullException>()
+        await act.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
             .WithMessage("Transaction cannot be null. / Транзакция не может быть нулевой.");
     }
 
@@ -76,11 +75,11 @@ public class TransactionsRepositoryTests
 
         // Act & Assert
         Func<Task> actWithdraw = async () => await repository.AddTransferTransactionAsync(null, new TransactionDto { Id = Guid.NewGuid() });
-        await actWithdraw.Should().ThrowAsync<ArgumentNullException>()
+        await actWithdraw.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
             .WithMessage("Transfer-withdraw transaction cannot be null. / Транзакция на перевод-снятие не может быть нулевой.");
 
         Func<Task> actDeposit = async () => await repository.AddTransferTransactionAsync(new TransactionDto { Id = Guid.NewGuid() }, null);
-        await actDeposit.Should().ThrowAsync<ArgumentNullException>()
+        await actDeposit.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
             .WithMessage("Transfer-deposit transaction cannot be null. / Транзакция на перевод-пополнение не может быть нулевой.");
     }
 
