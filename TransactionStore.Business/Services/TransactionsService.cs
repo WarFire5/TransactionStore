@@ -115,6 +115,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
+        _logger.Information($"Received TransferRequest: AccountFromId={request.AccountFromId}, AccountToId={request.AccountToId}, Amount={request.Amount}, CurrencyFrom={request.CurrencyFrom}, CurrencyTo={request.CurrencyTo}");
         _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
@@ -136,7 +137,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         if (transactions == null || transactions.Count == 0)
         {
-            _logger.Warning($"Transactions for ID {id} not found. / Транзакции для ID {id} не найдены.");
+            _logger.Information($"Transactions for ID {id} not found. / Транзакции для ID {id} не найдены.");
             return null;
         }
 

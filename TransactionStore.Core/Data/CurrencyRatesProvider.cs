@@ -19,24 +19,28 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
     {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
 
+        _logger.Information($"Attempting to load currency rates from file: {filePath}");
+
         if (File.Exists(filePath))
         {
             try
             {
                 var json = File.ReadAllText(filePath);
-                _logger.Information("Currency rates loaded from file.");
                 _rates = JsonSerializer.Deserialize<Dictionary<string, decimal>>(json);
+
+                _logger.Information("Currency rates loaded from file successfully.");
+                _logger.Information($"Loaded currency rates: {JsonSerializer.Serialize(_rates)}");
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Error reading currency rates from file. Initializing with an empty dictionary in case of error.");
-                _rates = [];
+                _rates = new Dictionary<string, decimal>();
             }
         }
         else
         {
             _logger.Warning("Currency rates file not found, initializing with empty currency rates.");
-            _rates = [];
+            _rates = new Dictionary<string, decimal>();
         }
     }
 

@@ -84,7 +84,6 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         }
     }
 
-
     public async Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id)
     {
         _logger.Information($"Returning information about transactions of the account with Id {id}. / Возвращаем информацию о транзакциях аккаунта с Id {id}.");
