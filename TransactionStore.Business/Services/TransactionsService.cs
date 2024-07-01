@@ -56,7 +56,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
             var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transactionId);
 
-            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount);
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.Currency);
 
             return transactionId;
         }
@@ -89,7 +89,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
             var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transferWithdraw.Id);
 
-            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount);
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.CurrencyFrom);
 
             return response;
         }

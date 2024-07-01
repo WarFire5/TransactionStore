@@ -2,6 +2,7 @@
 using Messaging.Shared;
 using Serilog;
 using TransactionStore.Core.DTOs;
+using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Business.Services;
 public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesService
@@ -9,7 +10,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
     private readonly ILogger _logger = Log.ForContext<MessagesService>();
     private Task _publish;
 
-    public async Task PublishTransactionAsync(List<TransactionDto> transactions, decimal comissionAmount)
+    public async Task PublishTransactionAsync(List<TransactionDto> transactions, decimal comissionAmount, Currency currency)
     {
         foreach (var t in transactions)
         {
@@ -19,6 +20,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
                 t.AccountId,
                 t.TransactionType,
                 t.Amount,
+                Currency=currency,
                 Comission = comissionAmount,
                 t.Date,
             });
