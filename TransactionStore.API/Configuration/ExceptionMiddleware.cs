@@ -1,7 +1,6 @@
 using Serilog;
 using System.Net;
 using TransactionStore.Core.Exceptions;
-using ArgumentNullException = TransactionStore.Core.Exceptions.ArgumentNullException;
 
 namespace TransactionStore.API.Configuration;
 
@@ -31,7 +30,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         {
             await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Доступ запрещен. / Access denied.");
         }
-        catch (ArgumentNullException ex)
+        catch (Core.Exceptions.ArgumentNullException ex)
         {
             await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadRequest, "Значение не должно быть null. / The value must not be null.");
         }

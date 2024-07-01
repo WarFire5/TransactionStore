@@ -13,11 +13,11 @@ public class AddTransferValidator : AbstractValidator<TransferRequest>
         RuleFor(t => t.AccountToId)
             .NotEmpty().WithMessage("Enter a valid GUID. / Введите корректный GUID.");
 
-        RuleFor(t => t.CurrencyFromType)
+        RuleFor(t => t.CurrencyFrom)
             .NotEmpty().WithMessage("The field cannot be empty. Specify the currency type. / Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("The field cannot be null. Specify the currency type. / Поле не может быть null. Укажите тип валюты.");
 
-        RuleFor(t => t.CurrencyToType)
+        RuleFor(t => t.CurrencyTo)
             .NotEmpty().WithMessage("The field cannot be empty. Specify the currency type. / Поле не может быть пустым. Укажите тип валюты.")
             .NotNull().WithMessage("The field cannot be null. Specify the currency type. / Поле не может быть null. Укажите тип валюты.");
 

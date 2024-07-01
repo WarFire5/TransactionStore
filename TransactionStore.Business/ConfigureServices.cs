@@ -11,6 +11,7 @@ public static class ConfigureServices
     public static void ConfigureBllServices(this IServiceCollection services)
     {
         services.AddScoped<ITransactionsService, TransactionsService>();
+        services.AddScoped<IMessagesService, MessagesService>();
         services.AddScoped<IValidator<TransferRequest>, AddTransferValidator>();
         services.AddScoped<IValidator<DepositWithdrawRequest>, AddDepositWithdrawValidator>();
     }

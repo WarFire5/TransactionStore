@@ -1,5 +1,4 @@
-﻿using TransactionStore.Core.Data;
-using TransactionStore.Core.DTOs;
+﻿using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 
@@ -10,21 +9,21 @@ public static class TransactionsServiceTestData
     public static DepositWithdrawRequest GetValidDepositRequest(Guid accountId) => new()
     {
         AccountId = accountId,
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 100
     };
 
     public static DepositWithdrawRequest GetValidWithdrawRequest(Guid accountId) => new()
     {
         AccountId = accountId,
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 100
     };
 
     public static DepositWithdrawRequest GetInvalidDepositWithdrawRequest() => new()
     {
         AccountId = Guid.NewGuid(),
-        CurrencyType = Currency.USD,
+        Currency = Currency.USD,
         Amount = 0
     };
 
@@ -32,8 +31,8 @@ public static class TransactionsServiceTestData
     {
         AccountFromId = Guid.NewGuid(),
         AccountToId = Guid.NewGuid(),
-        CurrencyFromType = Currency.USD,
-        CurrencyToType = Currency.EUR,
+        CurrencyFrom = Currency.USD,
+        CurrencyTo = Currency.EUR,
         Amount = 100
     };
 
@@ -41,10 +40,14 @@ public static class TransactionsServiceTestData
     {
         AccountFromId = Guid.NewGuid(),
         AccountToId = Guid.NewGuid(),
-        CurrencyFromType = Currency.RUB,
-        CurrencyToType = Currency.EUR,
+        CurrencyFrom = Currency.RUB,
+        CurrencyTo = Currency.EUR,
         Amount = 0
     };
+
+    public static decimal GetCommissionPercent() => 1.5m;
+
+    public static (decimal rateToUSD, decimal rateFromUsd) GetCurrencyRates() => (1.1m, 0.9m);
 
     public static TransactionDto CreateExpectedWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
@@ -57,13 +60,9 @@ public static class TransactionsServiceTestData
         };
     }
 
-    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount)
+    public static TransactionDto CreateExpectedDepositTransaction(TransferRequest request, decimal withdrawAmount, decimal rateToUSD, decimal rateFromUsd)
     {
-        var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
         var amountUsd = withdrawAmount * rateToUSD;
-        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
-
         return new TransactionDto
         {
             AccountId = request.AccountToId,

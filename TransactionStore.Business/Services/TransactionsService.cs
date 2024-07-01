@@ -7,13 +7,12 @@ using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
 using TransactionStore.DataLayer.Repositories;
-using ValidationException = FluentValidation.ValidationException;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, IMapper mapper,
-    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
-    IValidator<TransferRequest> addTransferValidator) : ITransactionsService
+public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider, ICommissionsProvider commissionsProvider,
+    IMapper mapper, IMessagesService messagesService,
+    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
 
@@ -54,8 +53,12 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             _logger.Information("Setting the transaction type. / Установка типа транзакции.");
             transaction.TransactionType = transactionType;
 
-            _logger.Information("Adding the transaction to the repository and returning the transaction ID. / Добавление транзакции в репозиторий и возврат идентификатора транзакции.");
-            return await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
+            var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
+            var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transactionId);
+
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.Currency);
+
+            return transactionId;
         }
 
         _logger.Information("Handling validation errors. / Обработка ошибок валидации.");
@@ -83,6 +86,11 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
             _logger.Information("Adding the transfer transaction to the repository and getting the response. / Добавление транзакции перевода в репозиторий и получение ответа.");
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
+
+            var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transferWithdraw.Id);
+
+            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.CurrencyFrom);
+
             return response;
         }
         else
@@ -108,10 +116,9 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
         _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
-        var currencyRatesProvider = new CurrencyRatesProvider();
-        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFromType);
+        var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
-        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyToType);
+        var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
 
         _logger.Information("Creating deposit transaction DTO. / Создание DTO для транзакции пополнения.");
         return new TransactionDto
@@ -122,11 +129,46 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         };
     }
 
-    public async Task<List<TransactionWithAccountIdResponse>> GetTransactionByIdAsync(Guid id)
+    public async Task<FullTransactionResponse> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information($"Getting transaction by ID {id}. / Получение транзакции по ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
-        return mapper.Map<List<TransactionWithAccountIdResponse>>(transactions);
+
+        if (transactions == null || transactions.Count == 0)
+        {
+            _logger.Warning($"Transactions for ID {id} not found. / Транзакции для ID {id} не найдены.");
+            return null;
+        }
+
+        var transactionResponse = new FullTransactionResponse();
+
+        if (transactions[0].TransactionType == TransactionType.Transfer)
+        {
+            transactionResponse.Id = transactions[1].Id;
+            transactionResponse.AccountFromId = transactions[1].AccountId;
+            transactionResponse.AccountToId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[1].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+        else if (transactions[0].TransactionType == TransactionType.Deposit)
+        {
+            transactionResponse.Id = transactions[0].Id;
+            transactionResponse.AccountToId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[0].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+        else if (transactions[0].TransactionType == TransactionType.Withdraw)
+        {
+            transactionResponse.Id = transactions[0].Id;
+            transactionResponse.AccountFromId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[0].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+
+        return transactionResponse;
     }
 
     public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
@@ -141,7 +183,16 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         _logger.Information($"Getting a list of transactions for account with ID {id}. / Получение списка транзакций для аккаунта с ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
 
-        _logger.Information($"Getting balance for account with ID {id}. / Получение баланса для аккаунта с ID {id}.");
+        if (transactions.Count == 0)
+        {
+            _logger.Information("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
+            return new AccountBalanceResponse
+            {
+                AccountId = id,
+                Balance = 0,
+            };
+        }
+
         var balance = transactions.Sum(t => t.Amount);
 
         _logger.Information($"For an account with ID {id} the balance was calculated - {balance}. / Для аккаунта с ID {id} рассчитан баланс - {balance}.");
