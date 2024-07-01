@@ -40,8 +40,21 @@ public class TransactionsController(ITransactionsService transactionsService) : 
     [HttpGet("{id}")]
     public async Task<ActionResult<FullTransactionResponse>> GetTransactionById(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            _logger.Warning($"Transaction ID is empty. / Id транзакции пуст.");
+            return NotFound("Transaction ID is empty.");
+        }
+
         _logger.Information($"Getting transaction by Id {id}. / Получаем транзакцию по Id {id}.");
-        var transactions = await transactionsService.GetTransactionByIdAsync(id);
-        return Ok(transactions);
+        var transaction = await transactionsService.GetTransactionByIdAsync(id);
+
+        if (transaction == null)
+        {
+            _logger.Warning($"Transaction with Id {id} not found. / Транзакция с Id {id} не найдена.");
+            return NotFound($"Transaction with Id {id} not found.");
+        }
+
+        return Ok(transaction);
     }
 }

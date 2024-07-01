@@ -34,13 +34,13 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
             catch (Exception ex)
             {
                 _logger.Error(ex, "Error reading currency rates from file. Initializing with an empty dictionary in case of error.");
-                _rates = new Dictionary<string, decimal>();
+                _rates = [];
             }
         }
         else
         {
             _logger.Warning("Currency rates file not found, initializing with empty currency rates.");
-            _rates = new Dictionary<string, decimal>();
+            _rates = [];
         }
     }
 
