@@ -48,42 +48,56 @@ public class TransactionsServiceTests
     private static Guid GenerateUniqueId() => Guid.NewGuid();
 
     [Fact]
-    public async Task AddTransaction_ValidRequest_ReturnsCorrectTransactionId()
+    public async Task AddDepositTransaction_ValidRequest_ReturnsCorrectTransactionId()
     {
         // Arrange
         var accountId = GenerateUniqueId();
-        var depositRequest = TransactionsServiceTestData.GetValidDepositRequest(accountId);
-        var withdrawRequest = TransactionsServiceTestData.GetValidWithdrawRequest(accountId);
+        var depositRequest = TransactionsServiceTestData.GetValidDepositWithdrawRequest(accountId);
         var depositId = GenerateUniqueId();
-        var withdrawId = GenerateUniqueId();
 
-        _repositoryMock.SetupSequence(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>()))
-            .ReturnsAsync(depositId)
-            .ReturnsAsync(withdrawId);
+        _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>()))
+            .ReturnsAsync(depositId);
 
         // Act
         var depositResult = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, depositRequest);
-        var withdrawResult = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, withdrawRequest);
 
         // Assert
         depositResult.Should().Be(depositId);
-        withdrawResult.Should().Be(withdrawId);
 
         var depositCommission = depositRequest.Amount * 0.05m;
         var expectedDepositAmount = depositRequest.Amount - depositCommission;
 
-        var withdrawCommission = withdrawRequest.Amount * 0.10m;
-        var expectedWithdrawAmount = -(withdrawRequest.Amount - withdrawCommission);
-
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.TransactionType == TransactionType.Deposit && t.Amount == expectedDepositAmount)), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddWithdrawTransaction_ValidRequest_ReturnsCorrectTransactionId()
+    {
+        // Arrange
+        var accountId = Guid.NewGuid();
+        var withdrawRequest = TransactionsServiceTestData.GetValidDepositWithdrawRequest(accountId);
+        var withdrawId = Guid.NewGuid();
+
+        // Настройка mock объекта
+        _repositoryMock.Setup(r => r.AddDepositWithdrawTransactionAsync(It.IsAny<TransactionDto>()))
+                       .ReturnsAsync(withdrawId);
+
+        // Act
+        var withdrawResult = await _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, withdrawRequest);
+
+        // Assert
+        withdrawResult.Should().Be(withdrawId);
+
+        var withdrawCommission = withdrawRequest.Amount * 0.10m;
+        var expectedWithdrawAmount = -(withdrawRequest.Amount - withdrawCommission);
 
         _repositoryMock.Verify(r => r.AddDepositWithdrawTransactionAsync(It.Is<TransactionDto>(t =>
             t.TransactionType == TransactionType.Withdraw && t.Amount == expectedWithdrawAmount)), Times.Once);
     }
 
     [Fact]
-    public async Task AddTransaction_InvalidRequest_ThrowsValidationException()
+    public async Task AddDepositTransaction_InvalidRequest_ThrowsValidationException()
     {
         // Arrange
         var invalidRequest = TransactionsServiceTestData.GetInvalidDepositWithdrawRequest();
@@ -91,20 +105,36 @@ public class TransactionsServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<FluentValidation.ValidationException>(() =>
             _service.AddDepositWithdrawTransactionAsync(TransactionType.Deposit, invalidRequest));
+    }
+
+    [Fact]
+    public async Task AddWithdrawTransaction_InvalidRequest_ThrowsValidationException()
+    {
+        // Arrange
+        var invalidRequest = TransactionsServiceTestData.GetInvalidDepositWithdrawRequest();
+
+        // Act & Assert
         await Assert.ThrowsAsync<FluentValidation.ValidationException>(() =>
             _service.AddDepositWithdrawTransactionAsync(TransactionType.Withdraw, invalidRequest));
     }
 
     [Fact]
-    public async Task AddTransferTransaction_ValidRequest_TransactionsAdded()
+    public async Task AddTransferTransaction_ValidRequest_ReturnsResponse()
     {
         // Arrange
-        var request = TransactionsServiceTestData.GetValidTransferRequest();
+        var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
+        var commissionPercent = 1.5m;
+        var commissionAmount = transferRequest.Amount * commissionPercent / 100;
+
+        _repositoryMock.Setup(r => r.AddTransferTransactionAsync(It.IsAny<TransactionDto>(), It.IsAny<TransactionDto>()))
+            .ReturnsAsync(new TransferGuidsResponse());
 
         // Act
-        await _service.AddTransferTransactionAsync(request);
+        var response = await _service.AddTransferTransactionAsync(transferRequest);
 
         // Assert
+        response.Should().NotBeNull();
+
         _repositoryMock.Verify(r => r.AddTransferTransactionAsync(It.IsAny<TransactionDto>(), It.IsAny<TransactionDto>()), Times.Once);
     }
 
@@ -112,38 +142,54 @@ public class TransactionsServiceTests
     public async Task AddTransferTransaction_InvalidRequest_ThrowsValidationException()
     {
         // Arrange
-        var invalidTransferRequest = TransactionsServiceTestData.GetInvalidTransferRequest();
+        var invalidRequest = TransactionsServiceTestData.GetInvalidTransferRequest();
 
         // Act & Assert
-        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() => _service.AddTransferTransactionAsync(invalidTransferRequest));
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() =>
+            _service.AddTransferTransactionAsync(invalidRequest));
     }
 
     [Fact]
-    public void CreateTransaction_ValidRequest_TransactionCreated()
+    public void CreateWithdrawTransaction_ValidRequest_TransactionCreated()
     {
         // Arrange
         var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
-        var commissionPercent = TransactionsServiceTestData.GetCommissionPercent();
+        var commissionPercent = 1.5m;
+        var commissionAmount = transferRequest.Amount * commissionPercent / 100;
+
+        _commissionsProviderMock.Setup(x => x.GetPercentForTransaction(TransactionType.Transfer))
+                                .Returns(commissionPercent);
+
+        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
+
+        // Act
+        var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);
+
+        // Assert
+        withdrawTransaction.Item1.Should().BeEquivalentTo(expectedWithdrawTransaction);
+    }
+
+    [Fact]
+    public void CreateDepositTransaction_ValidRequest_TransactionCreated()
+    {
+        // Arrange
+        var transferRequest = TransactionsServiceTestData.GetValidTransferRequest();
+        var commissionPercent = 1.5m;
         var commissionAmount = transferRequest.Amount * commissionPercent / 100;
         var withdrawAmount = transferRequest.Amount - commissionAmount;
         var (rateToUSD, rateFromUsd) = TransactionsServiceTestData.GetCurrencyRates();
 
-        _commissionsProviderMock.Setup(x => x.GetPercentForTransaction(TransactionType.Transfer))
-                                .Returns(commissionPercent);
         _currencyRatesProviderMock.Setup(x => x.ConvertFirstCurrencyToUsd(transferRequest.CurrencyFrom))
                                   .Returns(rateToUSD);
         _currencyRatesProviderMock.Setup(x => x.ConvertUsdToSecondCurrency(transferRequest.CurrencyTo))
                                   .Returns(rateFromUsd);
 
-        var expectedWithdrawTransaction = TransactionsServiceTestData.CreateExpectedWithdrawTransaction(transferRequest, commissionAmount);
         var expectedDepositTransaction = TransactionsServiceTestData.CreateExpectedDepositTransaction(transferRequest, withdrawAmount, rateToUSD, rateFromUsd);
 
         // Act
-        var withdrawTransaction = _service.CreateWithdrawTransaction(transferRequest, commissionAmount);
         var depositTransaction = _service.CreateDepositTransaction(transferRequest, withdrawAmount);
 
         // Assert
-        withdrawTransaction.Item1.Should().BeEquivalentTo(expectedWithdrawTransaction);
         depositTransaction.Should().BeEquivalentTo(expectedDepositTransaction);
     }
 

@@ -41,7 +41,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
                     break;
 
                 case TransactionType.Withdraw:
-                    _logger.Information("Adding commission amount to withdrawal transaction amount and making it negative. / Добавление суммы комиссии к сумме транзакции снятия и преобразование суммы в отрицательное значение.");
+                    _logger.Information("Subtracting commission amount from withdraw transaction amount and making it negative. / Вычитание суммы комиссии из суммы транзакции снятия и преобразование суммы в отрицательное значение.");
                     transaction.Amount = -(transaction.Amount - commissionAmount);
                     break;
 
@@ -56,7 +56,13 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
             var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transactionId);
 
-            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.Currency);
+            _logger.Information("Convert transaction amount to RUB. / Перевод суммы транзакции в рубли.");
+            var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.Currency);
+            var amountInUSD = transaction.Amount * rateToUSD;
+            var rateToRUB = currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+            var amountInRUB = amountInUSD * rateToRUB;
+
+            await messagesService.PublishTransactionAsync(transactionsDto, request.Currency, commissionAmount, amountInRUB);
 
             return transactionId;
         }
@@ -84,12 +90,23 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             _logger.Information("Creating the deposit transaction. / Создание транзакции пополнения.");
             var transferDeposit = CreateDepositTransaction(request, withdrawAmount);
 
+            _logger.Information("Converting withdraw and deposit amounts to RUB. / Конвертация суммы снятия и пополнения в рубли.");
+            var currencyRatesProvider = new CurrencyRatesProvider();
+            var withdrawAmountInUsd = withdrawAmount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
+            var withdrawAmountInRub = withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+
+            var depositAmountInUsd = transferDeposit.Amount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyTo);
+            var depositAmountInRub = depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+
             _logger.Information("Adding the transfer transaction to the repository and getting the response. / Добавление транзакции перевода в репозиторий и получение ответа.");
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
 
-            var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transferWithdraw.Id);
+            _logger.Information("Creating list of transactions for message publishing. / Создание списка транзакций для публикации сообщений.");
+            var transactions = new List<TransactionDto> { transferWithdraw, transferDeposit };
 
-            await messagesService.PublishTransactionAsync(transactionsDto, commissionAmount, request.CurrencyFrom);
+            _logger.Information("Publishing transaction details to the message service. / Публикация деталей транзакции в сервис сообщений.");
+            await messagesService.PublishTransactionAsync(transactions, request.CurrencyFrom, commissionAmount, withdrawAmountInRub);
+            await messagesService.PublishTransactionAsync(transactions, request.CurrencyTo, commissionAmount, depositAmountInRub);
 
             return response;
         }
@@ -115,7 +132,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
-        _logger.Information($"Received TransferRequest: AccountFromId={request.AccountFromId}, AccountToId={request.AccountToId}, Amount={request.Amount}, CurrencyFrom={request.CurrencyFrom}, CurrencyTo={request.CurrencyTo}");
         _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
@@ -143,16 +159,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         var transactionResponse = new FullTransactionResponse();
 
-        if (transactions[0].TransactionType == TransactionType.Transfer)
-        {
-            transactionResponse.Id = transactions[1].Id;
-            transactionResponse.AccountFromId = transactions[1].AccountId;
-            transactionResponse.AccountToId = transactions[0].AccountId;
-            transactionResponse.TransactionType = transactions[0].TransactionType;
-            transactionResponse.Amount = transactions[1].Amount;
-            transactionResponse.Date = transactions[0].Date;
-        }
-        else if (transactions[0].TransactionType == TransactionType.Deposit)
+        if (transactions[0].TransactionType == TransactionType.Deposit)
         {
             transactionResponse.Id = transactions[0].Id;
             transactionResponse.AccountToId = transactions[0].AccountId;
@@ -166,6 +173,15 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             transactionResponse.AccountFromId = transactions[0].AccountId;
             transactionResponse.TransactionType = transactions[0].TransactionType;
             transactionResponse.Amount = transactions[0].Amount;
+            transactionResponse.Date = transactions[0].Date;
+        }
+        else
+        {
+            transactionResponse.Id = transactions[1].Id;
+            transactionResponse.AccountFromId = transactions[1].AccountId;
+            transactionResponse.AccountToId = transactions[0].AccountId;
+            transactionResponse.TransactionType = transactions[0].TransactionType;
+            transactionResponse.Amount = transactions[1].Amount;
             transactionResponse.Date = transactions[0].Date;
         }
 

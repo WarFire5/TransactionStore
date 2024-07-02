@@ -5,5 +5,5 @@ namespace TransactionStore.Business.Services;
 
 public interface IMessagesService
 {
-    Task PublishTransactionAsync(List<TransactionDto> transactions, decimal comissionAmount, Currency currency);
+    Task PublishTransactionAsync(List<TransactionDto> transactions, Currency currency, decimal comissionAmount, decimal amountInRUB);
 }

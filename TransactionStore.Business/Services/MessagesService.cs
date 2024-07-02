@@ -10,7 +10,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
     private readonly ILogger _logger = Log.ForContext<MessagesService>();
     private Task _publish;
 
-    public async Task PublishTransactionAsync(List<TransactionDto> transactions, decimal comissionAmount, Currency currency)
+    public async Task PublishTransactionAsync(List<TransactionDto> transactions, Currency currency, decimal comissionAmount, decimal amountInRUB)
     {
         foreach (var t in transactions)
         {
@@ -20,9 +20,10 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
                 t.AccountId,
                 t.TransactionType,
                 t.Amount,
-                Currency=currency,
-                Comission = comissionAmount,
                 t.Date,
+                Currency = currency,
+                CommissionAmount = comissionAmount,
+                AmountInRUB = amountInRUB
             });
 
             _logger.Information("Sending transaction info to RabbitMQ. / Отправляем информацию о транзакции в RabbitMQ.");

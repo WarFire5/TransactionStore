@@ -52,12 +52,6 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
     public decimal ConvertFirstCurrencyToUsd(Enum currencyNumber)
     {
         var currency = ConvertCurrencyEnumToString(currencyNumber);
-        if (_rates == null)
-        {
-            _logger.Error("Error, currency rates not found.");
-            throw new ArgumentException("Error, currency rates not found.");
-        }
-
         if (_rates.TryGetValue(currency, out var rateToUsd))
         {
             _logger.Information($"Returning rate {currency} to USD - {rateToUsd}.");

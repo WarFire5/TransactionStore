@@ -6,14 +6,7 @@ namespace TransactionStore.Business.Tests;
 
 public static class TransactionsServiceTestData
 {
-    public static DepositWithdrawRequest GetValidDepositRequest(Guid accountId) => new()
-    {
-        AccountId = accountId,
-        Currency = Currency.USD,
-        Amount = 100
-    };
-
-    public static DepositWithdrawRequest GetValidWithdrawRequest(Guid accountId) => new()
+    public static DepositWithdrawRequest GetValidDepositWithdrawRequest(Guid accountId) => new()
     {
         AccountId = accountId,
         Currency = Currency.USD,
@@ -44,8 +37,6 @@ public static class TransactionsServiceTestData
         CurrencyTo = Currency.EUR,
         Amount = 0
     };
-
-    public static decimal GetCommissionPercent() => 1.5m;
 
     public static (decimal rateToUSD, decimal rateFromUsd) GetCurrencyRates() => (1.1m, 0.9m);
 
