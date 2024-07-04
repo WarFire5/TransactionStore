@@ -28,6 +28,14 @@ public static class ConfigureServices
                 {
                     e.ConfigureConsumer<RatesInfoConsumer>(context);
                 });
+                cfg.ReceiveEndpoint("settings_queue", e =>
+                {
+                    e.Bind("configurations-exchange", x =>
+                    {
+                        x.ExchangeType = "fanout";
+                    });
+                    e.ConfigureConsumer<SettingsConsumer>(context);
+                });
             });
         });
         services.AddSingleton<ICurrencyRatesProvider, CurrencyRatesProvider>();
