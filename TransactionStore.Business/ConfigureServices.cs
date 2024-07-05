@@ -14,5 +14,6 @@ public static class ConfigureServices
         services.AddScoped<IMessagesService, MessagesService>();
         services.AddScoped<IValidator<TransferRequest>, AddTransferValidator>();
         services.AddScoped<IValidator<DepositWithdrawRequest>, AddDepositWithdrawValidator>();
+        services.AddTransient<IHttpClientService, HttpClientService>();
     }
 }

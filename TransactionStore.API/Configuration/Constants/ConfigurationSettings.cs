@@ -2,5 +2,10 @@
 
 public static class ConfigurationSettings
 {
-    public const string CrmApiAdress = "194.87.210.5:10000";
+    public const string LogPath = "Serilog:WriteTo:0:Args:path";
+    public const string ConnectionStrings = "ConnectionStrings";
+    public const string ServicesUrlSettings = "ServicesUrlSettings";
+    public const string ComissionSettings = "ComissionSettings";
+    public const string ConfigurationServiceUrl = "https://194.87.210.5:13000/api/configuration?service=2";
+    public const string DefaultConfigurationSection = "DefaultSettings";
 }
