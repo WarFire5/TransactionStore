@@ -3,7 +3,7 @@ using Npgsql;
 using TransactionStore.Core.Enums;
 using TransactionStore.DataLayer;
 
-namespace TransactionStore.API.Extensions;
+namespace TransactionStore.API.Configuration;
 
 public static class DataBaseExtensions
 {

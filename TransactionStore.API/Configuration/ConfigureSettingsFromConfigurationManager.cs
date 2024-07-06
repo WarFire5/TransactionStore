@@ -2,7 +2,7 @@
 using TransactionStore.API.Configuration.Exceptions;
 using TransactionStore.Business.Services;
 
-namespace TransactionStore.API.Extensions;
+namespace TransactionStore.API.Configuration;
 
 public static class ConfigureSettingsFromConfigurationManager
 {

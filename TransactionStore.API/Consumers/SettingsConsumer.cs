@@ -2,7 +2,7 @@
 using Messaging.Shared;
 using Serilog;
 using System.Text.Json;
-using TransactionStore.API.Extensions;
+using TransactionStore.API.Configuration;
 using TransactionStore.Core.Enums;
 
 namespace TransactionStore.API.Consumers;

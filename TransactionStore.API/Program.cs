@@ -1,6 +1,5 @@
 using Serilog;
 using TransactionStore.API.Configuration;
-using TransactionStore.API.Extensions;
 using TransactionStore.Business;
 using TransactionStore.DataLayer;
 

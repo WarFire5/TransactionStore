@@ -6,12 +6,13 @@ using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
+using TransactionStore.Core.Settings;
 using TransactionStore.DataLayer.Repositories;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider, ICommissionsProvider commissionsProvider,
-    IMapper mapper, IMessagesService messagesService,
+public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider, 
+    ICommissionsProvider commissionsProvider, IMapper mapper, IMessagesService messagesService,
     IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
@@ -27,7 +28,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             TransactionDto transaction = mapper.Map<TransactionDto>(request);
 
             _logger.Information("A commission provider instance is created to obtain the commission percentage. / Создается экземпляр провайдера комиссий для получения процентной ставки комиссии.");
-            var commissionsProvider = new CommissionsProvider();
             var commissionPercent = commissionsProvider.GetPercentForTransaction(transactionType);
 
             _logger.Information("Calculating the commission amount based on the transaction amount and commission percent. / Расчет суммы комиссии на основе суммы транзакции и процентной ставки комиссии.");
@@ -80,7 +80,6 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         if (validationResult.IsValid)
         {
             _logger.Information("Calculating the commission. / Считаем комиссию.");
-            var commissionsProvider = new CommissionsProvider();
             var commissionPercent = commissionsProvider.GetPercentForTransaction(TransactionType.Transfer);
             var commissionAmount = request.Amount * commissionPercent / 100;
 
