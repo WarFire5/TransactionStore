@@ -14,7 +14,6 @@ public static class ConfigureServices
         {
             config.Filters.Add(new GlobalFilter());
         });
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.ConfigureDataBase(configurationManager);
