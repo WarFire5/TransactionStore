@@ -25,10 +25,10 @@ public static class ConfigureServices
             x.AddConsumer<SettingsConsumer>();
             x.UsingRabbitMq((context, cfg) =>
             {
-                //cfg.ReceiveEndpoint("currency_rates", e =>
-                //{
-                //    e.ConfigureConsumer<RatesInfoConsumer>(context);
-                //});
+                cfg.ReceiveEndpoint("currency_rates", e =>
+                {
+                    e.ConfigureConsumer<RatesInfoConsumer>(context);
+                });
                 cfg.ReceiveEndpoint("settings_queue", e =>
                 {
                     e.Bind("configurations-exchange", x =>
