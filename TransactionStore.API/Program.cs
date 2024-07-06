@@ -22,7 +22,9 @@ try
     Log.Information(jsonMessage);
     var a = builder.Configuration["DatabaseSettings:TransactionStoreDb"];
     Log.Information(a);
-   
+    var b= builder.Configuration["Serilog:WriteTo:1:Args:path"];
+    Log.Information(b);
+
     builder.Services.ConfigureApiServices(builder.Configuration);
     builder.Services.ConfigureBllServices();
     builder.Services.ConfigureDalServices();

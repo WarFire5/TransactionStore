@@ -2,7 +2,7 @@
 
 public static class ConfigurationSettings
 {
-    public const string LogPath = "Serilog:WriteTo:0:Args:path";
+    public const string LogPath = "Serilog:WriteTo:1:Args:path";
     public const string DatabaseSettings = "DatabaseSettings";
     public const string ServicesUrlSettings = "ServicesUrlSettings";
     public const string ComissionSettings = "ComissionSettings";
