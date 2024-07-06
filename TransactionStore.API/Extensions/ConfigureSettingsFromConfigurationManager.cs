@@ -14,13 +14,15 @@ public static class ConfigureSettingsFromConfigurationManager
         return configurationSettings;
     }
 
-    public static async Task ReadSettingsFromConfigurationManager(this IConfiguration configuration)
+    public static async Task<Dictionary<string, string>> ReadSettingsFromConfigurationManager(this IConfiguration configuration)
     {
         var configurationSettings = await GetConfigurationSettings();
         SetValueFromConfigurationManager(configuration.GetSection(ConfigurationSettings.LogPath), configurationSettings);
-        //configuration.ReadSection(ConfigurationSettings.ConnectionStrings, configurationSettings);
+        configuration.ReadSection(ConfigurationSettings.DatabaseSettings, configurationSettings);
         configuration.ReadSection(ConfigurationSettings.ComissionSettings, configurationSettings);
         configuration.ReadSection(ConfigurationSettings.ServicesUrlSettings, configurationSettings);
+
+        return configurationSettings;
     }
 
     private static void ReadSection(this IConfiguration configuration, string keySection, Dictionary<string, string> configurationSettings)
@@ -46,7 +48,7 @@ public static class ConfigureSettingsFromConfigurationManager
     {
         var defaultSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection);
         UpdateValueFromConfigurationManager(defaultSection.GetSection(ConfigurationSettings.LogPath), configuration.GetSection(ConfigurationSettings.LogPath), settings);
-        //configuration.UpdateSection(ConfigurationSettings.ConnectionStrings, settings);
+        configuration.UpdateSection(ConfigurationSettings.DatabaseSettings, settings);
         configuration.UpdateSection(ConfigurationSettings.ComissionSettings, settings);
         configuration.UpdateSection(ConfigurationSettings.ServicesUrlSettings, settings);
     }

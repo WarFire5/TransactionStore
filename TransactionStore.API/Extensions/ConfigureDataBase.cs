@@ -7,9 +7,9 @@ namespace TransactionStore.API.Extensions;
 
 public static class DataBaseExtensions
 {
-    public static void ConfigureDataBase(this IServiceCollection services, ConfigurationManager configurationManager)
+    public static void ConfigureDataBase(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configurationManager.GetConnectionString("TsConnection");
+        var connectionString = configuration[ConfigurationSettings.DatabaseContext];
 
         var dataSourceBuilder = new NpgsqlConnectionStringBuilder(connectionString);
         var dataSource = dataSourceBuilder.ConnectionString;
