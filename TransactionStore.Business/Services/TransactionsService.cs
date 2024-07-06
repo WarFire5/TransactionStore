@@ -6,12 +6,11 @@ using TransactionStore.Core.DTOs;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
-using TransactionStore.Core.Settings;
 using TransactionStore.DataLayer.Repositories;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider, 
+public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider,
     ICommissionsProvider commissionsProvider, IMapper mapper, IMessagesService messagesService,
     IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
@@ -19,44 +18,44 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
-        _logger.Information("Validating the request asynchronously. / Асинхронная валидация запроса.");
+        _logger.Information("Validating the request asynchronously.");
         var validationResult = await addDepositWithdrawValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
-            _logger.Information("Mapping the request object to TransactionDto. / Преобразование объекта запроса в TransactionDto.");
+            _logger.Information("Mapping the request object to TransactionDto.");
             TransactionDto transaction = mapper.Map<TransactionDto>(request);
 
-            _logger.Information("A commission provider instance is created to obtain the commission percentage. / Создается экземпляр провайдера комиссий для получения процентной ставки комиссии.");
+            _logger.Information("A commission provider instance is created to obtain the commission percentage.");
             var commissionPercent = commissionsProvider.GetPercentForTransaction(transactionType);
 
-            _logger.Information("Calculating the commission amount based on the transaction amount and commission percent. / Расчет суммы комиссии на основе суммы транзакции и процентной ставки комиссии.");
+            _logger.Information("Calculating the commission amount based on the transaction amount and commission percent.");
             var commissionAmount = transaction.Amount * commissionPercent / 100;
 
             switch (transactionType)
             {
                 case TransactionType.Deposit:
-                    _logger.Information("Subtracting commission amount from deposit transaction amount. / Вычитание суммы комиссии из суммы депозитной транзакции.");
+                    _logger.Information("Subtracting commission amount from deposit transaction amount.");
                     transaction.Amount -= commissionAmount;
                     break;
 
                 case TransactionType.Withdraw:
-                    _logger.Information("Subtracting commission amount from withdraw transaction amount and making it negative. / Вычитание суммы комиссии из суммы транзакции снятия и преобразование суммы в отрицательное значение.");
+                    _logger.Information("Subtracting commission amount from withdraw transaction amount and making it negative.");
                     transaction.Amount = -(transaction.Amount - commissionAmount);
                     break;
 
                 default:
-                    _logger.Information("Throwing an error if the transaction type is not suitable. / Выдача ошибки, если тип транзакции не подходит.");
-                    throw new Core.Exceptions.ValidationException("The transaction type must be deposit or withdrawal. / Тип транзакции должен быть deposit или withdraw.");
+                    _logger.Information("Throwing an error if the transaction type is not suitable.");
+                    throw new Core.Exceptions.ValidationException("The transaction type must be deposit or withdrawal.");
             }
 
-            _logger.Information("Setting the transaction type. / Установка типа транзакции.");
+            _logger.Information("Setting the transaction type.");
             transaction.TransactionType = transactionType;
 
             var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
             var transactionsDto = await transactionsRepository.GetTransactionByIdAsync(transactionId);
 
-            _logger.Information("Convert transaction amount to RUB. / Перевод суммы транзакции в рубли.");
+            _logger.Information("Convert transaction amount to RUB.");
             var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.Currency);
             var amountInUSD = transaction.Amount * rateToUSD;
             var rateToRUB = currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
@@ -67,29 +66,29 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             return transactionId;
         }
 
-        _logger.Information("Handling validation errors. / Обработка ошибок валидации.");
+        _logger.Information("Handling validation errors.");
         string exceptions = string.Join(Environment.NewLine, validationResult.Errors);
         throw new ValidationException(exceptions);
     }
 
     public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransferRequest request)
     {
-        _logger.Information("Validating the transfer request asynchronously. / Асинхронная валидация запроса на перевод.");
+        _logger.Information("Validating the transfer request asynchronously.");
         var validationResult = await addTransferValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
-            _logger.Information("Calculating the commission. / Считаем комиссию.");
+            _logger.Information("Calculating the commission.");
             var commissionPercent = commissionsProvider.GetPercentForTransaction(TransactionType.Transfer);
             var commissionAmount = request.Amount * commissionPercent / 100;
 
-            _logger.Information("Creating the withdraw transaction with commission. / Создание транзакции снятия с учетом комиссии.");
+            _logger.Information("Creating the withdraw transaction with commission.");
             var (transferWithdraw, withdrawAmount) = CreateWithdrawTransaction(request, commissionAmount);
 
-            _logger.Information("Creating the deposit transaction. / Создание транзакции пополнения.");
+            _logger.Information("Creating the deposit transaction.");
             var transferDeposit = CreateDepositTransaction(request, withdrawAmount);
 
-            _logger.Information("Converting withdraw and deposit amounts to RUB. / Конвертация суммы снятия и пополнения в рубли.");
+            _logger.Information("Converting withdraw and deposit amounts to RUB.");
             var currencyRatesProvider = new CurrencyRatesProvider();
             var withdrawAmountInUsd = withdrawAmount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
             var withdrawAmountInRub = withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
@@ -97,13 +96,13 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var depositAmountInUsd = transferDeposit.Amount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyTo);
             var depositAmountInRub = depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
 
-            _logger.Information("Adding the transfer transaction to the repository and getting the response. / Добавление транзакции перевода в репозиторий и получение ответа.");
+            _logger.Information("Adding the transfer transaction to the repository and getting the response.");
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
 
-            _logger.Information("Creating list of transactions for message publishing. / Создание списка транзакций для публикации сообщений.");
+            _logger.Information("Creating list of transactions for message publishing.");
             var transactions = new List<TransactionDto> { transferWithdraw, transferDeposit };
 
-            _logger.Information("Publishing transaction details to the message service. / Публикация деталей транзакции в сервис сообщений.");
+            _logger.Information("Publishing transaction details to the message service.");
             await messagesService.PublishTransactionAsync(transactions, request.CurrencyFrom, commissionAmount, withdrawAmountInRub);
             await messagesService.PublishTransactionAsync(transactions, request.CurrencyTo, commissionAmount, depositAmountInRub);
 
@@ -111,7 +110,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         }
         else
         {
-            _logger.Information("Throwing an error if validation fails. / Выдача ошибки, если валидация не пройдена.");
+            _logger.Information("Throwing an error if validation fails.");
             string exceptions = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
             throw new ValidationException(exceptions);
         }
@@ -119,7 +118,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public (TransactionDto, decimal) CreateWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
-        _logger.Information("Creating withdraw transaction DTO. / Создание DTO для транзакции снятия.");
+        _logger.Information("Creating withdraw transaction DTO.");
         var withdrawAmount = request.Amount - commissionAmount;
         return (new TransactionDto
         {
@@ -131,12 +130,12 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
-        _logger.Information("Getting currency conversion rates and calculating deposit amount. / Получение курсов валют и расчет суммы депозита.");
+        _logger.Information("Getting currency conversion rates and calculating deposit amount.");
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
         var amountUsd = withdrawAmount * rateToUSD;
         var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
 
-        _logger.Information("Creating deposit transaction DTO. / Создание DTO для транзакции пополнения.");
+        _logger.Information("Creating deposit transaction DTO.");
         return new TransactionDto
         {
             AccountId = request.AccountToId,
@@ -147,12 +146,12 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public async Task<FullTransactionResponse> GetTransactionByIdAsync(Guid id)
     {
-        _logger.Information($"Getting transaction by ID {id}. / Получение транзакции по ID {id}.");
+        _logger.Information($"Getting transaction by ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionByIdAsync(id);
 
         if (transactions == null || transactions.Count == 0)
         {
-            _logger.Information($"Transactions for ID {id} not found. / Транзакции для ID {id} не найдены.");
+            _logger.Information($"Transactions for ID {id} not found.");
             return null;
         }
 
@@ -189,19 +188,19 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
     {
-        _logger.Information($"Getting transactions for account with ID {id}. / Получение транзакций для аккаунта с ID {id}.");
+        _logger.Information($"Getting transactions for account with ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
         return mapper.Map<List<TransactionResponse>>(transactions);
     }
 
     public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
     {
-        _logger.Information($"Getting a list of transactions for account with ID {id}. / Получение списка транзакций для аккаунта с ID {id}.");
+        _logger.Information($"Getting a list of transactions for account with ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
 
         if (transactions.Count == 0)
         {
-            _logger.Information("No transactions found for the account. / Транзакций для переданного accountId не найдено.");
+            _logger.Information("No transactions found for the account.");
             return new AccountBalanceResponse
             {
                 AccountId = id,
@@ -211,7 +210,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         var balance = transactions.Sum(t => t.Amount);
 
-        _logger.Information($"For an account with ID {id} the balance was calculated - {balance}. / Для аккаунта с ID {id} рассчитан баланс - {balance}.");
+        _logger.Information($"For an account with ID {id} the balance was calculated - {balance}.");
         AccountBalanceResponse accountBalance = new()
         {
             AccountId = transactions[0].AccountId,

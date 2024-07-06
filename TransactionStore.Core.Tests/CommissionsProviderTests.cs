@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using TransactionStore.Core.Data;
+using TransactionStore.Core.Settings;
 
 namespace TransactionStore.Core.Tests;
 
@@ -15,9 +16,9 @@ public class CommissionsProviderTests
 {
     private readonly CommissionsProvider _commissionsProvider;
 
-    public CommissionsProviderTests()
+    public CommissionsProviderTests(ComissionSettings comission)
     {
-        _commissionsProvider = new CommissionsProvider();
+        _commissionsProvider = new CommissionsProvider(comission);
     }
 
     [Theory]
@@ -41,6 +42,6 @@ public class CommissionsProviderTests
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => _commissionsProvider.GetPercentForTransaction(nonExistingType));
-        Assert.Contains("The commission percentage for transaction of type UNKNOWN not found. / Процент комиссии для транзакции типа UNKNOWN не найден.", exception.Message);
+        Assert.Contains("The commission percentage for transaction of type UNKNOWN not found.", exception.Message);
     }
 }

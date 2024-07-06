@@ -16,23 +16,23 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
         catch (ValidationException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.UnprocessableEntity, "Ошибка валидации. / Validation error.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.UnprocessableEntity, "Validation error.");
         }
         catch (NotFoundException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, "Контент не найден. / Content not found error.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, "Content not found error.");
         }
         catch (ServiceUnavailableException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.ServiceUnavailable, "Нет соединения с базой данных. / There is no connection to the database.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.ServiceUnavailable, "There is no connection to the database.");
         }
         catch (ForbiddenException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Доступ запрещен. / Access denied.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.Forbidden, "Access denied.");
         }
         catch (Core.Exceptions.ArgumentNullException ex)
         {
-            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadRequest, "Значение не должно быть null. / The value must not be null.");
+            await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadRequest, "The value must not be null.");
         }
         catch (Exception ex)
         {

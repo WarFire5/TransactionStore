@@ -29,10 +29,10 @@ public class CommissionsProvider : ICommissionsProvider
         var transaction = ConvertTransactionEnumToString(transactionType);
         if (_percent.TryGetValue(transaction, out var percent))
         {
-            _logger.Information($"Returning percent of commission за {transactionType} - {percent}. / Возврат процента комиссии за {transactionType} – {percent}");
+            _logger.Information($"Returning percent of commission за {transactionType} - {percent}.");
             return percent;
         }
-        _logger.Error($"Throwing an error if commission percentage for transaction of type {transaction} not found. / Выдача ошибки, если процент комиссии для транзакции типа {transaction} не найден.");
-        throw new ArgumentException($"The commission percentage for transaction of type {transaction} not found. / Процент комиссии для транзакции типа {transaction} не найден.");
+        _logger.Error($"Throwing an error if commission percentage for transaction of type {transaction} not found.");
+        throw new ArgumentException($"The commission percentage for transaction of type {transaction} not found.");
     }
 }

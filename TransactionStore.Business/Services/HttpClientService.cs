@@ -8,13 +8,6 @@ namespace TransactionStore.Business.Services;
 
 public class HttpClientService : IHttpClientService
 {
-    //private readonly HttpClientSettings _settings;
-
-    public HttpClientService()
-    {
-        //_settings = settings.Value;
-    }
-
     public async Task<T> Get<T>(string urlForRequest, CancellationToken cancellationToken)
     {
         var handler = new HttpClientHandler

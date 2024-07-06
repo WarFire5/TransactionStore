@@ -26,7 +26,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
                 AmountInRUB = amountInRUB
             });
 
-            _logger.Information("Sending transaction info to RabbitMQ. / Отправляем информацию о транзакции в RabbitMQ.");
+            _logger.Information("Sending transaction info to RabbitMQ.");
         }
         await _publish;
     }

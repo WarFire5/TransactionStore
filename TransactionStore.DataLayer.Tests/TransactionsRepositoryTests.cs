@@ -48,7 +48,7 @@ public class TransactionsRepositoryTests
         // Act & Assert
         Func<Task> act = async () => await repository.AddDepositWithdrawTransactionAsync(null);
         await act.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
-            .WithMessage("Transaction cannot be null. / Транзакция не может быть нулевой.");
+            .WithMessage("Transaction cannot be null.");
     }
 
     [Fact]
@@ -76,11 +76,11 @@ public class TransactionsRepositoryTests
         // Act & Assert
         Func<Task> actWithdraw = async () => await repository.AddTransferTransactionAsync(null, new TransactionDto { Id = Guid.NewGuid() });
         await actWithdraw.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
-            .WithMessage("Transfer-withdraw transaction cannot be null. / Транзакция на перевод-снятие не может быть нулевой.");
+            .WithMessage("Transfer-withdraw transaction cannot be null.");
 
         Func<Task> actDeposit = async () => await repository.AddTransferTransactionAsync(new TransactionDto { Id = Guid.NewGuid() }, null);
         await actDeposit.Should().ThrowAsync<Core.Exceptions.ArgumentNullException>()
-            .WithMessage("Transfer-deposit transaction cannot be null. / Транзакция на перевод-пополнение не может быть нулевой.");
+            .WithMessage("Transfer-deposit transaction cannot be null.");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class TransactionsRepositoryTests
         Func<Task> act = async () => await repository.GetTransactionByIdAsync(nonExistingId);
 
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage($"Transaction with Id {nonExistingId} not found. / Транзакция с Id {nonExistingId} не найдена.");
+            .WithMessage($"Transaction with Id {nonExistingId} not found.");
     }
 
     [Fact]
@@ -153,6 +153,6 @@ public class TransactionsRepositoryTests
         Func<Task> act = async () => await repository.GetTransactionsByAccountIdAsync(accountId);
 
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage($"No transactions found for account with Id {accountId}. / Транзакции для аккаунта с Id {accountId} не найдены.");
+            .WithMessage($"No transactions found for account with Id {accountId}.");
     }
 }
