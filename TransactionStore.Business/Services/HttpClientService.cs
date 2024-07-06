@@ -22,7 +22,7 @@ public class HttpClientService : IHttpClientService
             ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
         };
 
-        var options = new RestClientOptions("https://194.87.210.5:13000/api/configuration?service=2")
+        var options = new RestClientOptions()
         {
             ConfigureMessageHandler = _ => handler,
             Timeout = TimeSpan.FromSeconds(380)

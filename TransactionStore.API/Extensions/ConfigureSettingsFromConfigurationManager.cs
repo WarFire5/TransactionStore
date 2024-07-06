@@ -18,11 +18,11 @@ public static class ConfigureSettingsFromConfigurationManager
     {
         var configurationSettings = await GetConfigurationSettings();
         SetValueFromConfigurationManager(configuration.GetSection(ConfigurationSettings.LogPath), configurationSettings);
-        configuration.ReadSection(ConfigurationSettings.ConnectionStrings, configurationSettings);
+        //configuration.ReadSection(ConfigurationSettings.ConnectionStrings, configurationSettings);
         configuration.ReadSection(ConfigurationSettings.ComissionSettings, configurationSettings);
         configuration.ReadSection(ConfigurationSettings.ServicesUrlSettings, configurationSettings);
     }
-  
+
     private static void ReadSection(this IConfiguration configuration, string keySection, Dictionary<string, string> configurationSettings)
     {
         var section = configuration.GetSection(keySection).GetChildren();
@@ -46,7 +46,7 @@ public static class ConfigureSettingsFromConfigurationManager
     {
         var defaultSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection);
         UpdateValueFromConfigurationManager(defaultSection.GetSection(ConfigurationSettings.LogPath), configuration.GetSection(ConfigurationSettings.LogPath), settings);
-        configuration.UpdateSection(ConfigurationSettings.ConnectionStrings, settings);
+        //configuration.UpdateSection(ConfigurationSettings.ConnectionStrings, settings);
         configuration.UpdateSection(ConfigurationSettings.ComissionSettings, settings);
         configuration.UpdateSection(ConfigurationSettings.ServicesUrlSettings, settings);
     }
