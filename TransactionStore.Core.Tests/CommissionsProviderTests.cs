@@ -12,14 +12,9 @@ public enum TestTransaction
     UNKNOWN // для проверки исключений
 }
 
-public class CommissionsProviderTests
+public class CommissionsProviderTests(ComissionSettings comission)
 {
-    private readonly CommissionsProvider _commissionsProvider;
-
-    public CommissionsProviderTests(ComissionSettings comission)
-    {
-        _commissionsProvider = new CommissionsProvider(comission);
-    }
+    private readonly CommissionsProvider _commissionsProvider = new(comission);
 
     [Theory]
     [InlineData(TestTransaction.DEPOSIT, 5)]

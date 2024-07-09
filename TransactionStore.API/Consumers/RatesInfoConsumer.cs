@@ -3,13 +3,11 @@ using Messaging.Shared;
 using Serilog;
 using System.Text.Json;
 using TransactionStore.Business.Services;
-using TransactionStore.Core.Data;
 
 namespace TransactionStore.API.Consumers;
 
-public class RatesInfoConsumer(ICurrencyRatesProvider currencyRatesProvider, ITransactionsService service) : IConsumer<RatesInfo>
+public class RatesInfoConsumer(ITransactionsService service) : IConsumer<RatesInfo>
 {
-    private readonly ICurrencyRatesProvider _currencyRatesProvider = currencyRatesProvider;
     private readonly ITransactionsService _service = service;
     private readonly Serilog.ILogger _logger = Log.ForContext<RatesInfoConsumer>();
 

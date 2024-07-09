@@ -1,7 +1,5 @@
 using Messaging.Shared;
 using Serilog;
-using System.Text.Json;
-using TransactionStore.Core.Enums;
 
 namespace TransactionStore.Core.Data;
 
@@ -12,38 +10,8 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
 
     public CurrencyRatesProvider()
     {
-        
-    }
 
-    // private void LoadRates()
-    // {
-    //     var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
-    //
-    //     _logger.Information($"Attempting to load currency rates from file: {filePath}");
-    //
-    //     if (File.Exists(filePath))
-    //     {
-    //         try
-    //         {
-    //             var json = File.ReadAllText(filePath);
-    //             _rates = JsonSerializer.Deserialize<Dictionary<string, decimal>>(json);
-    //
-    //             _logger.Information("Currency rates loaded from file successfully.");
-    //             _logger.Information($"Loaded currency rates: {JsonSerializer.Serialize(_rates)}");
-    //         }
-    //         catch (Exception ex)
-    //         {
-    //             _logger.Error(ex,
-    //                 "Error reading currency rates from file. Initializing with an empty dictionary in case of error.");
-    //             _rates = [];
-    //         }
-    //     }
-    //     else
-    //     {
-    //         _logger.Warning("Currency rates file not found, initializing with empty currency rates.");
-    //         _rates = [];
-    //     }
-    // }
+    }
 
     private static string ConvertCurrencyEnumToString(Enum currencyNumber)
     {
@@ -80,82 +48,5 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
     {
         _logger.Information($"Currency rates updated at {DateTime.Now}.");
         _rates = rates.Rates;
-
-        //
-        // _logger.Information($"Started filtering currency rates on {DateTime.Now}.");
-        // var trimmedRates = GetSecondCurrencyFromPair();
-        // var filteredCurrencyRates = GetFilteredCurrencyRates(trimmedRates);
-        // _logger.Information($"Finished filtering currency rates on {DateTime.Now}.");
-        //
-        // var result = new List<CurrenciesRateDto>();
-        // foreach (var currency in filteredCurrencyRates)
-        // {
-        //     if (Enum.TryParse(currency.Key, out Currency currencyEnum))
-        //     {
-        //         var dto = new CurrenciesRateDto()
-        //         {
-        //             Currency = currencyEnum,
-        //             Rate = currency.Value
-        //         };
-        //         result.Add(dto);
-        //         // Добавьте dto в контекст или сделайте с ним что-то другое
-        //     }
-        //     else
-        //     {
-        //         throw new ValidationException("что то не так с валютой, не могу записать в базу");
-        //     }
-        // }
-        //
-        // _rates = filteredCurrencyRates;
-        // _logger.Information($"The following currency rates were obtained: {filteredCurrencyRates}.");
-        //
-        // _logger.Information($"Serializing the result in JSON and write it to a file.");
-        // var json = JsonSerializer.Serialize(filteredCurrencyRates, new JsonSerializerOptions { WriteIndented = true });
-        // var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
-        //
-        // try
-        // {
-        //     File.WriteAllText(filePath, json);
-        //     _logger.Information($"Result has been written to {filePath}.");
-        // }
-        // catch (Exception ex)
-        // {
-        //     _logger.Error(ex, "Error writing result to file.");
-        // }
-    }
-    
-
-    private Dictionary<string, decimal> GetSecondCurrencyFromPair()
-    {
-        _logger.Information("Getting the second currency from the pair.");
-        var newRates = new Dictionary<string, decimal>();
-
-        foreach (var rate in _rates)
-        {
-            var trimKey = rate.Key.Remove(0, 3);
-            if (!newRates.ContainsKey(trimKey))
-            {
-                newRates.Add(trimKey, rate.Value);
-            }
-        }
-
-        return newRates;
-    }
-
-    private Dictionary<string, decimal> GetFilteredCurrencyRates(Dictionary<string, decimal> oldDictionary)
-    {
-        var validKeys = Enum.GetNames(typeof(Currency));
-
-        _logger.Information("Getting filtered currency rates.");
-        var filteredDictionary = oldDictionary.Where(rate => validKeys.Contains(rate.Key)).ToDictionary();
-
-        if (!filteredDictionary.ContainsKey("USD"))
-        {
-            filteredDictionary.Add("USD", 1);
-        }
-
-        filteredDictionary["USD"] = 1;
-
-        return filteredDictionary;
     }
 }

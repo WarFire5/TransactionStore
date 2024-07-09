@@ -21,7 +21,6 @@ public class HttpClientService : IHttpClientService
 
         var client = new RestClient(options);
         var request = new RestRequest(urlForRequest);
-
         var response = await client.ExecuteAsync(request, Method.Get, cancellationToken);
 
         if (!response.IsSuccessful)

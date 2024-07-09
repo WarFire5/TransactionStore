@@ -55,8 +55,7 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         await _ctx.Transactions.AddAsync(transferDeposit);
         await _ctx.SaveChangesAsync();
 
-        _logger.Information(
-            $"Returning transfer-withdraw Id {transferWithdraw.Id} and transfer-deposit Id {transferDeposit.Id}.");
+        _logger.Information($"Returning transfer-withdraw Id {transferWithdraw.Id} and transfer-deposit Id {transferDeposit.Id}.");
         return new TransferGuidsResponse
         {
             TransferWithdrawId = transferWithdraw.Id,
@@ -102,23 +101,23 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
     public async Task<List<CurrenciesRateDto>> GetRatesAsync()
     {
+        _logger.Information($"Getting currency rates {_ctx.CurrenciesRates.ToListAsync()}.");
         var rates = await _ctx.CurrenciesRates.ToListAsync();
-
         return rates;
     }
-    
+
     public void SetNewRates(List<CurrenciesRateDto> rates)
     {
-        // Загружаем все текущие курсы валют в память
+        _logger.Information("Loading all current currency rates into memory.");
         var oldRates = _ctx.CurrenciesRates.ToList();
 
-        // Удаляем все текущие курсы валют из базы данных
+        _logger.Information("Deleting all current currency rates from the database.");
         _ctx.CurrenciesRates.RemoveRange(oldRates);
 
-        // Добавляем новые курсы валют в базу данных
+        _logger.Information("Adding new currency rates to the database.");
         _ctx.CurrenciesRates.AddRange(rates);
 
-        // Сохраняем изменения в базе данных
+        _logger.Information("Saving changes to the database.");
         _ctx.SaveChanges();
     }
 }
