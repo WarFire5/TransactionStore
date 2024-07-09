@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using System.Globalization;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Settings;
 
@@ -13,9 +14,9 @@ public class CommissionsProvider : ICommissionsProvider
     {
         _percent = new Dictionary<string, decimal>()
         {
-            { TransactionType.Deposit.ToString().ToUpper(), decimal.Parse(comission.Deposit) },
-            { TransactionType.Withdraw.ToString().ToUpper(), decimal.Parse(comission.Withdraw) },
-            { TransactionType.Transfer.ToString().ToUpper(), decimal.Parse(comission.Transfer) }
+            { TransactionType.Deposit.ToString().ToUpper(), decimal.Parse(comission.Deposit, new NumberFormatInfo() { NumberDecimalSeparator = "," }) },
+            { TransactionType.Withdraw.ToString().ToUpper(), decimal.Parse(comission.Withdraw, new NumberFormatInfo() { NumberDecimalSeparator = "," }) },
+            { TransactionType.Transfer.ToString().ToUpper(), decimal.Parse(comission.Transfer, new NumberFormatInfo() { NumberDecimalSeparator = "," }) }
         };
     }
 
@@ -29,7 +30,7 @@ public class CommissionsProvider : ICommissionsProvider
         var transaction = ConvertTransactionEnumToString(transactionType);
         if (_percent.TryGetValue(transaction, out var percent))
         {
-            _logger.Information($"Returning percent of commission за {transactionType} - {percent}.");
+            _logger.Information($"Returning percent of commission {transactionType} - {percent}.");
             return percent;
         }
         _logger.Error($"Throwing an error if commission percentage for transaction of type {transaction} not found.");
