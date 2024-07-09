@@ -35,7 +35,8 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         return transaction.Id;
     }
 
-    public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransactionDto transferWithdraw, TransactionDto transferDeposit)
+    public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransactionDto transferWithdraw,
+        TransactionDto transferDeposit)
     {
         if (transferWithdraw == null)
         {
@@ -54,7 +55,8 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         await _ctx.Transactions.AddAsync(transferDeposit);
         await _ctx.SaveChangesAsync();
 
-        _logger.Information($"Returning transfer-withdraw Id {transferWithdraw.Id} and transfer-deposit Id {transferDeposit.Id}.");
+        _logger.Information(
+            $"Returning transfer-withdraw Id {transferWithdraw.Id} and transfer-deposit Id {transferDeposit.Id}.");
         return new TransferGuidsResponse
         {
             TransferWithdrawId = transferWithdraw.Id,
@@ -96,5 +98,27 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         }
 
         return transactions;
+    }
+
+    public async Task<List<CurrenciesRateDto>> GetRatesAsync()
+    {
+        var rates = await _ctx.CurrenciesRates.ToListAsync();
+
+        return rates;
+    }
+    
+    public void SetNewRates(List<CurrenciesRateDto> rates)
+    {
+        // Загружаем все текущие курсы валют в память
+        var oldRates = _ctx.CurrenciesRates.ToList();
+
+        // Удаляем все текущие курсы валют из базы данных
+        _ctx.CurrenciesRates.RemoveRange(oldRates);
+
+        // Добавляем новые курсы валют в базу данных
+        _ctx.CurrenciesRates.AddRange(rates);
+
+        // Сохраняем изменения в базе данных
+        _ctx.SaveChanges();
     }
 }

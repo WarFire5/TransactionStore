@@ -36,10 +36,10 @@ public static class ConfigureSettingsFromConfigurationManager
 
     private static void SetValueFromConfigurationManager(IConfigurationSection key, Dictionary<string, string> configurationSettings)
     {
-        var value = key.Value ?? throw new ConfigurationMissingException("Value of configuration key is null");
+        var value = key.Value ?? throw new NoConfigurationException("Value of configuration key is null.");
         if (!configurationSettings.TryGetValue(value, out var configurationSetting))
         {
-            throw new ConfigurationMissingException("Configuration manager variables are not specified");
+            throw new NoConfigurationException("Configuration manager variables are not specified.");
         }
         key.Value = configurationSetting;
     }
@@ -71,10 +71,10 @@ public static class ConfigureSettingsFromConfigurationManager
 
     private static void UpdateValueFromConfigurationManager(IConfigurationSection sourceKey, IConfigurationSection destinationKey, Dictionary<string, string> configurationSettings)
     {
-        var value = sourceKey.Value ?? throw new ConfigurationMissingException("Value of configuration key is null");
+        var value = sourceKey.Value ?? throw new NoConfigurationException("Value of configuration key is null");
         if (!configurationSettings.TryGetValue(value, out var configurationSetting))
         {
-            throw new ConfigurationMissingException("Configuration manager variables are not specified");
+            throw new NoConfigurationException("Configuration manager variables are not specified");
         }
         destinationKey.Value = configurationSetting;
     }

@@ -1,3 +1,4 @@
+using Messaging.Shared;
 using TransactionStore.Core.Enums;
 using TransactionStore.Core.Models.Requests;
 using TransactionStore.Core.Models.Responses;
@@ -11,4 +12,5 @@ public interface ITransactionsService
     Task<FullTransactionResponse> GetTransactionByIdAsync(Guid id);
     Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id);
     Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id);
+    Task SetRates(RatesInfo rates);
 }

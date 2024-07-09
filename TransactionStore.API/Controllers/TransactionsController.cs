@@ -32,8 +32,7 @@ public class TransactionsController(ITransactionsService transactionsService) : 
     [HttpPost("transfer")]
     public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] TransferRequest request)
     {
-        _logger.Information($"A transfer transaction from an account with Id {request.AccountFromId} to an account with Id {request.AccountToId} " +
-            $"has been added into the database.");
+        _logger.Information($"A transfer transaction from an account with Id {request.AccountFromId} to an account with Id {request.AccountToId} has been added into the database.");
         var response = await transactionsService.AddTransferTransactionAsync(request);
         return Created($"/api/transactions/{response}", response);
     }

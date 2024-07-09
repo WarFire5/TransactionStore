@@ -7,42 +7,43 @@ namespace TransactionStore.Core.Data;
 
 public class CurrencyRatesProvider : ICurrencyRatesProvider
 {
-    private Dictionary<string, decimal> _rates;
+    private static Dictionary<string, decimal> _rates;
     private readonly ILogger _logger = Log.ForContext<CurrencyRatesProvider>();
 
     public CurrencyRatesProvider()
     {
-        LoadRatesFromFile();
+        
     }
 
-    private void LoadRatesFromFile()
-    {
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
-
-        _logger.Information($"Attempting to load currency rates from file: {filePath}");
-
-        if (File.Exists(filePath))
-        {
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                _rates = JsonSerializer.Deserialize<Dictionary<string, decimal>>(json);
-
-                _logger.Information("Currency rates loaded from file successfully.");
-                _logger.Information($"Loaded currency rates: {JsonSerializer.Serialize(_rates)}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error reading currency rates from file. Initializing with an empty dictionary in case of error.");
-                _rates = [];
-            }
-        }
-        else
-        {
-            _logger.Warning("Currency rates file not found, initializing with empty currency rates.");
-            _rates = [];
-        }
-    }
+    // private void LoadRates()
+    // {
+    //     var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
+    //
+    //     _logger.Information($"Attempting to load currency rates from file: {filePath}");
+    //
+    //     if (File.Exists(filePath))
+    //     {
+    //         try
+    //         {
+    //             var json = File.ReadAllText(filePath);
+    //             _rates = JsonSerializer.Deserialize<Dictionary<string, decimal>>(json);
+    //
+    //             _logger.Information("Currency rates loaded from file successfully.");
+    //             _logger.Information($"Loaded currency rates: {JsonSerializer.Serialize(_rates)}");
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             _logger.Error(ex,
+    //                 "Error reading currency rates from file. Initializing with an empty dictionary in case of error.");
+    //             _rates = [];
+    //         }
+    //     }
+    //     else
+    //     {
+    //         _logger.Warning("Currency rates file not found, initializing with empty currency rates.");
+    //         _rates = [];
+    //     }
+    // }
 
     private static string ConvertCurrencyEnumToString(Enum currencyNumber)
     {
@@ -80,28 +81,49 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         _logger.Information($"Currency rates updated at {DateTime.Now}.");
         _rates = rates.Rates;
 
-        _logger.Information($"Started filtering currency rates on {DateTime.Now}.");
-        var trimmedRates = GetSecondCurrencyFromPair();
-        var result = GetFilteredCurrencyRates(trimmedRates);
-        _logger.Information($"Finished filtering currency rates on {DateTime.Now}.");
-
-        _rates = result;
-        _logger.Information($"The following currency rates were obtained: {result}.");
-
-        _logger.Information($"Serializing the result in JSON and write it to a file.");
-        var json = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
-
-        try
-        {
-            File.WriteAllText(filePath, json);
-            _logger.Information($"Result has been written to {filePath}.");
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, "Error writing result to file.");
-        }
+        //
+        // _logger.Information($"Started filtering currency rates on {DateTime.Now}.");
+        // var trimmedRates = GetSecondCurrencyFromPair();
+        // var filteredCurrencyRates = GetFilteredCurrencyRates(trimmedRates);
+        // _logger.Information($"Finished filtering currency rates on {DateTime.Now}.");
+        //
+        // var result = new List<CurrenciesRateDto>();
+        // foreach (var currency in filteredCurrencyRates)
+        // {
+        //     if (Enum.TryParse(currency.Key, out Currency currencyEnum))
+        //     {
+        //         var dto = new CurrenciesRateDto()
+        //         {
+        //             Currency = currencyEnum,
+        //             Rate = currency.Value
+        //         };
+        //         result.Add(dto);
+        //         // Добавьте dto в контекст или сделайте с ним что-то другое
+        //     }
+        //     else
+        //     {
+        //         throw new ValidationException("что то не так с валютой, не могу записать в базу");
+        //     }
+        // }
+        //
+        // _rates = filteredCurrencyRates;
+        // _logger.Information($"The following currency rates were obtained: {filteredCurrencyRates}.");
+        //
+        // _logger.Information($"Serializing the result in JSON and write it to a file.");
+        // var json = JsonSerializer.Serialize(filteredCurrencyRates, new JsonSerializerOptions { WriteIndented = true });
+        // var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result.json");
+        //
+        // try
+        // {
+        //     File.WriteAllText(filePath, json);
+        //     _logger.Information($"Result has been written to {filePath}.");
+        // }
+        // catch (Exception ex)
+        // {
+        //     _logger.Error(ex, "Error writing result to file.");
+        // }
     }
+    
 
     private Dictionary<string, decimal> GetSecondCurrencyFromPair()
     {

@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using Messaging.Shared;
 using Serilog;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.DTOs;
@@ -10,15 +11,20 @@ using TransactionStore.DataLayer.Repositories;
 
 namespace TransactionStore.Business.Services;
 
-public class TransactionsService(ITransactionsRepository transactionsRepository, ICurrencyRatesProvider currencyRatesProvider,
-    ICommissionsProvider commissionsProvider, IMapper mapper, IMessagesService messagesService,
-    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
+public class TransactionsService(
+    ITransactionsRepository transactionsRepository,
+    ICurrencyRatesProvider currencyRatesProvider,
+    ICommissionsProvider commissionsProvider,
+    IMapper mapper,
+    IMessagesService messagesService,
+    IValidator<DepositWithdrawRequest> addDepositWithdrawValidator,
+    IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
 
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
-        _logger.Information("Validating the request asynchronously.");
+        _logger.Information("Asynchronous request verification.");
         var validationResult = await addDepositWithdrawValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
@@ -29,18 +35,18 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             _logger.Information("A commission provider instance is created to obtain the commission percentage.");
             var commissionPercent = commissionsProvider.GetPercentForTransaction(transactionType);
 
-            _logger.Information("Calculating the commission amount based on the transaction amount and commission percent.");
+            _logger.Information($"Calculating the commission amount based on the transaction amount and commission percent; commissionAmount = {transaction.Amount * commissionPercent / 100}.");
             var commissionAmount = transaction.Amount * commissionPercent / 100;
 
             switch (transactionType)
             {
                 case TransactionType.Deposit:
-                    _logger.Information("Subtracting commission amount from deposit transaction amount.");
+                    _logger.Information($"Subtracting commission amount from deposit transaction amount; amount = {transaction.Amount - commissionAmount}.");
                     transaction.Amount -= commissionAmount;
                     break;
 
                 case TransactionType.Withdraw:
-                    _logger.Information("Subtracting commission amount from withdraw transaction amount and making it negative.");
+                    _logger.Information($"Subtracting commission amount from withdraw transaction amount and making it negative; amount = {-(transaction.Amount - commissionAmount)}.");
                     transaction.Amount = -(transaction.Amount - commissionAmount);
                     break;
 
@@ -49,7 +55,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
                     throw new Core.Exceptions.ValidationException("The transaction type must be deposit or withdrawal.");
             }
 
-            _logger.Information("Setting the transaction type.");
+            _logger.Information($"Setting the transaction type - {transactionType}.");
             transaction.TransactionType = transactionType;
 
             var transactionId = await transactionsRepository.AddDepositWithdrawTransactionAsync(transaction);
@@ -59,6 +65,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
             var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.Currency);
             var amountInUSD = transaction.Amount * rateToUSD;
             var rateToRUB = currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+            _logger.Information($"AmountInRUB = {amountInUSD * rateToRUB}.");
             var amountInRUB = amountInUSD * rateToRUB;
 
             await messagesService.PublishTransactionAsync(transactionsDto, request.Currency, commissionAmount, amountInRUB);
@@ -73,13 +80,17 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransferRequest request)
     {
-        _logger.Information("Validating the transfer request asynchronously.");
+        var rates = await GetRatesAsync();
+        currencyRatesProvider.SetRates(rates);
+
+        _logger.Information("Asynchronous transfer request verification.");
         var validationResult = await addTransferValidator.ValidateAsync(request);
 
         if (validationResult.IsValid)
         {
             _logger.Information("Calculating the commission.");
             var commissionPercent = commissionsProvider.GetPercentForTransaction(TransactionType.Transfer);
+            _logger.Information($"CommissionAmount = {request.Amount * commissionPercent / 100}.");
             var commissionAmount = request.Amount * commissionPercent / 100;
 
             _logger.Information("Creating the withdraw transaction with commission.");
@@ -90,10 +101,13 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
             _logger.Information("Converting withdraw and deposit amounts to RUB.");
             var currencyRatesProvider = new CurrencyRatesProvider();
+
             var withdrawAmountInUsd = withdrawAmount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
+            _logger.Information($"WithdrawAmountInRub = {withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB)}.");
             var withdrawAmountInRub = withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
 
             var depositAmountInUsd = transferDeposit.Amount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyTo);
+            _logger.Information($"DepositAmountInRub = {depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB)}.");
             var depositAmountInRub = depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
 
             _logger.Information("Adding the transfer transaction to the repository and getting the response.");
@@ -118,8 +132,9 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public (TransactionDto, decimal) CreateWithdrawTransaction(TransferRequest request, decimal commissionAmount)
     {
-        _logger.Information("Creating withdraw transaction DTO.");
+        _logger.Information($"Calculating the withdraw amount without commission - {request.Amount - commissionAmount}.");
         var withdrawAmount = request.Amount - commissionAmount;
+        _logger.Information($"Creating withdraw transaction DTO with amount {-withdrawAmount}.");
         return (new TransactionDto
         {
             AccountId = request.AccountFromId,
@@ -130,12 +145,13 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
     public TransactionDto CreateDepositTransaction(TransferRequest request, decimal withdrawAmount)
     {
-        _logger.Information("Getting currency conversion rates and calculating deposit amount.");
+        _logger.Information($"Getting currency rate to USD - {currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom)}.");
         var rateToUSD = currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
+        _logger.Information($"Converting the transaction amount to USD - {withdrawAmount * rateToUSD}.");
         var amountUsd = withdrawAmount * rateToUSD;
+        _logger.Information($"Getting currency rate from USD - {currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo)}.");
         var rateFromUsd = currencyRatesProvider.ConvertUsdToSecondCurrency(request.CurrencyTo);
-
-        _logger.Information("Creating deposit transaction DTO.");
+        _logger.Information($"Creating deposit transaction DTO with amount {amountUsd * rateFromUsd}.");
         return new TransactionDto
         {
             AccountId = request.AccountToId,
@@ -210,7 +226,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
 
         var balance = transactions.Sum(t => t.Amount);
 
-        _logger.Information($"For an account with ID {id} the balance was calculated - {balance}.");
+        _logger.Information($"For an account with ID {id} the balance is {balance}.");
         AccountBalanceResponse accountBalance = new()
         {
             AccountId = transactions[0].AccountId,
@@ -218,5 +234,52 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
         };
 
         return accountBalance;
+    }
+
+    public async Task SetRates(RatesInfo rates)
+    {
+        currencyRatesProvider.SetRates(rates);
+
+        var result = new List<CurrenciesRateDto>();
+
+        foreach (var rate in rates.Rates)
+        {
+            string trimKey = rate.Key.Length > 3 ? rate.Key[3..] : string.Empty;
+
+            if (Enum.TryParse(trimKey, out Currency currencyEnum))
+            {
+                var dto = new CurrenciesRateDto()
+                {
+                    Currency = currencyEnum,
+                    Rate = rate.Value
+                };
+
+                result.Add(dto);
+            }
+            else
+            {
+                _logger.Error($"Не удалось преобразовать '{trimKey}' в enum CurrencyType.");
+            }
+        }
+
+        transactionsRepository.SetNewRates(result);
+    }
+
+    public async Task<RatesInfo> GetRatesAsync()
+    {
+        var rates = await transactionsRepository.GetRatesAsync();
+
+        var result = new RatesInfo
+        {
+            Date = DateTime.UtcNow,
+            Rates = []
+        };
+
+        foreach (var rate in rates)
+        {
+            result.Rates.Add(rate.Currency.ToString(), rate.Rate);
+        }
+
+        return result;
     }
 }

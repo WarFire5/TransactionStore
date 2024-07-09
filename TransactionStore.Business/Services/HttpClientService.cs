@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using RestSharp;
+﻿using RestSharp;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TransactionStore.Core.Settings;
 
 namespace TransactionStore.Business.Services;
 
@@ -39,12 +37,7 @@ public class HttpClientService : IHttpClientService
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             });
 
-            if (result == null)
-            {
-                throw new HttpRequestException("Deserialized response is null");
-            }
-
-            return result;
+            return result == null ? throw new HttpRequestException("Deserialized response is null.") : result;
         }
         catch (JsonException ex)
         {

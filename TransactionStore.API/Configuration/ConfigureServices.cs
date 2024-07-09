@@ -3,7 +3,6 @@ using TransactionStore.API.Consumers;
 using TransactionStore.API.Filters;
 using TransactionStore.Core.Data;
 using TransactionStore.Core.Models;
-using TransactionStore.Core.Settings;
 
 namespace TransactionStore.API.Configuration;
 
@@ -25,11 +24,11 @@ public static class ConfigureServices
             x.AddConsumer<SettingsConsumer>();
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.ReceiveEndpoint("currency_rates", e =>
+                cfg.ReceiveEndpoint("settings-rates", e =>
                 {
                     e.ConfigureConsumer<RatesInfoConsumer>(context);
                 });
-                cfg.ReceiveEndpoint("settings_queue", e =>
+                cfg.ReceiveEndpoint("settings-t-store", e =>
                 {
                     e.Bind("configurations-exchange", x =>
                     {
