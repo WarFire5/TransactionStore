@@ -240,7 +240,7 @@ public class TransactionsService(
     {
         currencyRatesProvider.SetRates(rates);
 
-        var result = new List<CurrenciesRateDto>();
+        var result = new List<CurrencyRateDto>();
 
         foreach (var rate in rates.Rates)
         {
@@ -248,7 +248,7 @@ public class TransactionsService(
 
             if (Enum.TryParse(trimKey, out Currency currencyEnum))
             {
-                var dto = new CurrenciesRateDto()
+                var dto = new CurrencyRateDto()
                 {
                     Currency = currencyEnum,
                     Rate = rate.Value

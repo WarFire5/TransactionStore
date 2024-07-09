@@ -24,7 +24,7 @@ namespace TransactionStore.DataLayer.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "transaction_type", new[] { "unknown", "deposit", "withdraw", "transfer" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TransactionStore.Core.DTOs.CurrenciesRateDto", b =>
+            modelBuilder.Entity("TransactionStore.Core.DTOs.CurrencyRateDto", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,9 +40,9 @@ namespace TransactionStore.DataLayer.Migrations
                         .HasColumnName("rate");
 
                     b.HasKey("Id")
-                        .HasName("pk_currencies_rates");
+                        .HasName("pk_currency_rates");
 
-                    b.ToTable("currencies_rates", (string)null);
+                    b.ToTable("currency_rates", (string)null);
                 });
 
             modelBuilder.Entity("TransactionStore.Core.DTOs.TransactionDto", b =>

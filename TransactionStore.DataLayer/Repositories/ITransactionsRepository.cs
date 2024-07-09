@@ -9,6 +9,6 @@ public interface ITransactionsRepository
     Task<TransferGuidsResponse> AddTransferTransactionAsync(TransactionDto transferWithdraw, TransactionDto transferDeposit);
     Task<List<TransactionDto>> GetTransactionByIdAsync(Guid id);
     Task<List<TransactionDto>> GetTransactionsByAccountIdAsync(Guid id);
-    void SetNewRates(List<CurrenciesRateDto> rates);
-    Task<List<CurrenciesRateDto>> GetRatesAsync();
+    void SetNewRates(List<CurrencyRateDto> rates);
+    Task<List<CurrencyRateDto>> GetRatesAsync();
 }

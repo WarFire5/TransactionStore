@@ -2,7 +2,7 @@
 
 namespace TransactionStore.Core.DTOs;
 
-public class CurrenciesRateDto
+public class CurrencyRateDto
 {
     public Guid Id { get; set; }
     public Currency Currency { get; set; }

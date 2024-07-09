@@ -99,23 +99,23 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
         return transactions;
     }
 
-    public async Task<List<CurrenciesRateDto>> GetRatesAsync()
+    public async Task<List<CurrencyRateDto>> GetRatesAsync()
     {
-        _logger.Information($"Getting currency rates {_ctx.CurrenciesRates.ToListAsync()}.");
-        var rates = await _ctx.CurrenciesRates.ToListAsync();
+        _logger.Information($"Getting currency rates {_ctx.CurrencyRates.ToListAsync()}.");
+        var rates = await _ctx.CurrencyRates.ToListAsync();
         return rates;
     }
 
-    public void SetNewRates(List<CurrenciesRateDto> rates)
+    public void SetNewRates(List<CurrencyRateDto> rates)
     {
         _logger.Information("Loading all current currency rates into memory.");
-        var oldRates = _ctx.CurrenciesRates.ToList();
+        var oldRates = _ctx.CurrencyRates.ToList();
 
         _logger.Information("Deleting all current currency rates from the database.");
-        _ctx.CurrenciesRates.RemoveRange(oldRates);
+        _ctx.CurrencyRates.RemoveRange(oldRates);
 
         _logger.Information("Adding new currency rates to the database.");
-        _ctx.CurrenciesRates.AddRange(rates);
+        _ctx.CurrencyRates.AddRange(rates);
 
         _logger.Information("Saving changes to the database.");
         _ctx.SaveChanges();
