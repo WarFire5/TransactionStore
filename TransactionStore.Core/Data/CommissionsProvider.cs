@@ -30,7 +30,11 @@ public class CommissionsProvider : ICommissionsProvider
         var transaction = ConvertTransactionEnumToString(transactionType);
         if (_percent.TryGetValue(transaction, out var percent))
         {
+<<<<<<< HEAD
             _logger.Information($"Returning percent of commission for {transactionType} - {percent}.");
+=======
+            _logger.Information($"Returning percent of commission {transactionType} - {percent}.");
+>>>>>>> 8ff6319e1081350156cd6f37ffacc5e07e8c01ae
             return percent;
         }
         _logger.Error($"Throwing an error if percent of commission for {transaction} not found.");
