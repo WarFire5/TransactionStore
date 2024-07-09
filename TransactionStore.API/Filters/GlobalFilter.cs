@@ -11,10 +11,10 @@ public class GlobalFilter(IConfiguration configuration) : IActionFilter
 
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        //if (context.HttpContext.Request.Host.ToString() != configuration["ServicesUrlSettings:Crm"])
+        //if (context.HttpContext.Connection.RemoteIpAddress.ToString() != configuration["ServicesUrlSettings:Crm"])
         //{
-        //    _logger.Debug($"Access from adress {context.HttpContext.Request.Host} denied.");
-        //    throw new ForbiddenException($"Access from adress {context.HttpContext.Request.Host} denied.");
+        //    _logger.Debug($"Access from adress {context.HttpContext.Connection.RemoteIpAddress} denied.");
+        //    throw new ForbiddenException($"Access from adress {context.HttpContext.Connection.RemoteIpAddress} denied.");
         //}
     }
 
