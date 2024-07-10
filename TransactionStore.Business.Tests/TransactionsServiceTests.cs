@@ -253,7 +253,7 @@ public class TransactionsServiceTests
         // Arrange
         var transactionId = Guid.NewGuid();
 
-        _repositoryMock.Setup(r => r.GetTransactionByIdAsync(transactionId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database. / Нет соединения с базой данных."));
+        _repositoryMock.Setup(r => r.GetTransactionByIdAsync(transactionId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database."));
 
         // Act
         Func<Task> act = async () => await _service.GetTransactionByIdAsync(transactionId);
@@ -303,7 +303,7 @@ public class TransactionsServiceTests
         // Arrange
         var accountId = Guid.NewGuid();
 
-        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database. / Нет соединения с базой данных."));
+        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database."));
 
         // Act
         Func<Task> act = async () => await _service.GetTransactionsByAccountIdAsync(accountId);
@@ -338,7 +338,7 @@ public class TransactionsServiceTests
         // Arrange
         var accountId = Guid.NewGuid();
 
-        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database. / Нет соединения с базой данных."));
+        _repositoryMock.Setup(r => r.GetTransactionsByAccountIdAsync(accountId)).ThrowsAsync(new ServiceUnavailableException("There is no connection to the database."));
 
         // Act
         Func<Task> act = async () => await _service.GetBalanceByAccountIdAsync(accountId);

@@ -21,13 +21,13 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         {
             if (_rates.TryGetValue(currency, out var rateToUsd))
             {
-                _logger.Information($"Возвращаем курс {currency} к USD - {rateToUsd}.");
+                _logger.Information($"Returning rate {currency} to USD - {rateToUsd}.");
                 return rateToUsd;
             }
         }
 
-        _logger.Error($"Курс для {currency} к USD не найден.");
-        throw new ArgumentException($"Курс для {currency} к USD не найден.");
+        _logger.Error($"Throwing an error if rate for {currency} to USD not found.");
+        throw new ArgumentException($"Rate for {currency} to USD not found.");
     }
 
     public decimal ConvertUsdToSecondCurrency(Enum currencyNumber)
@@ -37,20 +37,20 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         {
             if (_rates.TryGetValue(currency, out var rateToUsd))
             {
-                _logger.Information($"Возвращаем курс USD к {currency} - 1/{rateToUsd}.");
+                _logger.Information($"Returning rate USD to {currency} - 1/{rateToUsd}.");
                 return 1 / rateToUsd;
             }
         }
 
-        _logger.Error($"Курс для USD к {currency} не найден.");
-        throw new ArgumentException($"Курс для USD к {currency} не найден.");
+        _logger.Error($"Throwing an error if rate for USD to {currency} not found.");
+        throw new ArgumentException($"Rate for USD to {currency} not found.");
     }
 
     public void SetRates(RatesInfo rates)
     {
         lock (_lockObject)
         {
-            _logger.Information($"Обновление курсов валют на {DateTime.Now}.");
+            _logger.Information($"Currency rates updated at {DateTime.Now}.");
             _rates = rates.Rates;
         }
     }
