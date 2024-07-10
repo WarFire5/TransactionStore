@@ -16,8 +16,8 @@ public class RatesInfoConsumer(ITransactionsService service) : IConsumer<RatesIn
         var messageJson = JsonSerializer.Serialize(context.Message, new JsonSerializerOptions { WriteIndented = true });
         _logger.Information($"Consuming message: {messageJson}.");
 
-        _service.SetRates(context.Message);
         _logger.Information("Setting currency rates.");
+        _service.SetRates(context.Message);
 
         _logger.Information($"Getting currency rates: {JsonSerializer.Serialize(context.Message.Rates, new JsonSerializerOptions { WriteIndented = true })} from Rates Provider.");
 

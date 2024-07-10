@@ -100,15 +100,8 @@ public class TransactionsService(
             var transferDeposit = CreateDepositTransaction(request, withdrawAmount);
 
             _logger.Information("Converting withdraw and deposit amounts to RUB.");
-            var currencyRatesProvider = new CurrencyRatesProvider();
-
-            var withdrawAmountInUsd = withdrawAmount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyFrom);
-            _logger.Information($"WithdrawAmountInRub = {withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB)}.");
-            var withdrawAmountInRub = withdrawAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
-
-            var depositAmountInUsd = transferDeposit.Amount * currencyRatesProvider.ConvertFirstCurrencyToUsd(request.CurrencyTo);
-            _logger.Information($"DepositAmountInRub = {depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB)}.");
-            var depositAmountInRub = depositAmountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+            var withdrawAmountInRub = ConvertToRub(withdrawAmount, request.CurrencyFrom);
+            var depositAmountInRub = ConvertToRub(transferDeposit.Amount, request.CurrencyTo);
 
             _logger.Information("Adding the transfer transaction to the repository and getting the response.");
             var response = await transactionsRepository.AddTransferTransactionAsync(transferWithdraw, transferDeposit);
@@ -158,6 +151,37 @@ public class TransactionsService(
             TransactionType = TransactionType.Transfer,
             Amount = amountUsd * rateFromUsd
         };
+    }
+
+    private decimal ConvertToRub(decimal amount, Enum currency)
+    {
+        var amountInUsd = amount * currencyRatesProvider.ConvertFirstCurrencyToUsd(currency);
+        return amountInUsd * currencyRatesProvider.ConvertUsdToSecondCurrency(Currency.RUB);
+    }
+
+    public async Task<RatesInfo> GetRatesAsync()
+    {
+        var rates = await transactionsRepository.GetRatesAsync();
+
+        var result = new RatesInfo
+        {
+            Date = DateTime.UtcNow,
+            Rates = []
+        };
+
+        foreach (var rate in rates)
+        {
+            result.Rates.Add(rate.Currency.ToString(), rate.Rate);
+        }
+
+        return result;
+    }
+
+    public Task SetRates(RatesInfo rates)
+    {
+        _logger.Information("Setting rates.");
+        currencyRatesProvider.SetRates(rates);
+        return Task.CompletedTask;
     }
 
     public async Task<FullTransactionResponse> GetTransactionByIdAsync(Guid id)
@@ -234,52 +258,5 @@ public class TransactionsService(
         };
 
         return accountBalance;
-    }
-
-    public async Task SetRates(RatesInfo rates)
-    {
-        currencyRatesProvider.SetRates(rates);
-
-        var result = new List<CurrencyRateDto>();
-
-        foreach (var rate in rates.Rates)
-        {
-            string trimKey = rate.Key.Length > 3 ? rate.Key[3..] : string.Empty;
-
-            if (Enum.TryParse(trimKey, out Currency currencyEnum))
-            {
-                var dto = new CurrencyRateDto()
-                {
-                    Currency = currencyEnum,
-                    Rate = rate.Value
-                };
-
-                result.Add(dto);
-            }
-            else
-            {
-                _logger.Error($"Не удалось преобразовать '{trimKey}' в enum CurrencyType.");
-            }
-        }
-
-        transactionsRepository.SetNewRates(result);
-    }
-
-    public async Task<RatesInfo> GetRatesAsync()
-    {
-        var rates = await transactionsRepository.GetRatesAsync();
-
-        var result = new RatesInfo
-        {
-            Date = DateTime.UtcNow,
-            Rates = []
-        };
-
-        foreach (var rate in rates)
-        {
-            result.Rates.Add(rate.Currency.ToString(), rate.Rate);
-        }
-
-        return result;
     }
 }

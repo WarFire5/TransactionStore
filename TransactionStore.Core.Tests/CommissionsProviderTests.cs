@@ -1,42 +1,44 @@
 ﻿using FluentAssertions;
 using TransactionStore.Core.Data;
+using TransactionStore.Core.Enums;
 using TransactionStore.Core.Settings;
 
-namespace TransactionStore.Core.Tests;
-
-public enum TestTransaction
+namespace TransactionStore.Core.Tests
 {
-    DEPOSIT,
-    WITHDRAW,
-    TRANSFER,
-    UNKNOWN // для проверки исключений
-}
-
-public class CommissionsProviderTests(ComissionSettings comission)
-{
-    private readonly CommissionsProvider _commissionsProvider = new(comission);
-
-    [Theory]
-    [InlineData(TestTransaction.DEPOSIT, 5)]
-    [InlineData(TestTransaction.WITHDRAW, 10)]
-    [InlineData(TestTransaction.TRANSFER, 7.5)]
-    public void GetPercentForTransaction_ExistingTransactionType_ReturnsPercent(TestTransaction transactionType, decimal expectedPercent)
+    public class CommissionsProviderTests
     {
-        // Act
-        var percent = _commissionsProvider.GetPercentForTransaction(transactionType);
+        private readonly ComissionSettings _comissionSettings = new("5,0", "10,0", "7,5");
 
-        // Assert
-        percent.Should().Be(expectedPercent);
-    }
+        private readonly CommissionsProvider _commissionsProvider;
 
-    [Fact]
-    public void GetPercentForTransaction_NonExistingTransactionType_ThrowsArgumentException()
-    {
-        // Arrange
-        Enum nonExistingType = TestTransaction.UNKNOWN; // Неизвестный тип транзакции
+        public CommissionsProviderTests()
+        {
+            _commissionsProvider = new CommissionsProvider(_comissionSettings);
+        }
 
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => _commissionsProvider.GetPercentForTransaction(nonExistingType));
-        Assert.Contains("The commission percentage for transaction of type UNKNOWN not found.", exception.Message);
+        [Theory]
+        [InlineData(TransactionType.Deposit, 5)]
+        [InlineData(TransactionType.Withdraw, 10)]
+        [InlineData(TransactionType.Transfer, 7.5)]
+        public void GetPercentForTransaction_ExistingTransactionType_ReturnsPercent(TransactionType transactionType, decimal expectedPercent)
+        {
+            // Act
+            var percent = _commissionsProvider.GetPercentForTransaction(transactionType);
+
+            // Assert
+            percent.Should().Be(expectedPercent);
+        }
+
+        [Fact]
+        public void GetPercentForTransaction_NonExistingTransactionType_ThrowsArgumentException()
+        {
+            // Arrange
+            Enum nonExistingType = TransactionType.Unknown; // Use Unknown from TransactionType enum
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _commissionsProvider.GetPercentForTransaction(nonExistingType));
+            Assert.Contains("The percent of commission for UNKNOWN not found.", exception.Message, StringComparison.InvariantCultureIgnoreCase);
+        }
+
     }
 }
