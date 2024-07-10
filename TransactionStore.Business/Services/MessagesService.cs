@@ -28,6 +28,6 @@ public class MessagesService(IPublishEndpoint publishEndpoint) : IMessagesServic
 
             _logger.Information("Sending transaction info to RabbitMQ.");
         }
-        await _publish;
+        await Task.WhenAll(_publish);
     }
 }
