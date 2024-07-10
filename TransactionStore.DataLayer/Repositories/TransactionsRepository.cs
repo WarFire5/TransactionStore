@@ -9,9 +9,11 @@ namespace TransactionStore.DataLayer.Repositories;
 public class TransactionsRepository : BaseRepository, ITransactionsRepository
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsRepository>();
+    private readonly DbContextOptions<TransactionStoreContext> _options;
 
-    public TransactionsRepository(TransactionStoreContext context) : base(context)
+    public TransactionsRepository(TransactionStoreContext context, DbContextOptions<TransactionStoreContext> options) : base(context)
     {
+        _options = options;
         if (!_ctx.Database.CanConnect())
         {
             _logger.Error("Throwing an error if there is no connection to the database.");
@@ -101,8 +103,9 @@ public class TransactionsRepository : BaseRepository, ITransactionsRepository
 
     public async Task<List<CurrencyRateDto>> GetRatesAsync()
     {
-        _logger.Information($"Getting currency rates {_ctx.CurrencyRates.ToListAsync()}.");
-        var rates = await _ctx.CurrencyRates.ToListAsync();
+        await using var context = new TransactionStoreContext(_options);
+        _logger.Information("Getting currency rates.");
+        var rates = await context.CurrencyRates.ToListAsync();
         return rates;
     }
 

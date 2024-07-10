@@ -24,6 +24,9 @@ public class TransactionsService(
 
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
+        var rates = await GetRatesAsync();
+        await currencyRatesProvider.SetRates(rates);
+
         _logger.Information("Asynchronous request verification.");
         var validationResult = await addDepositWithdrawValidator.ValidateAsync(request);
 
@@ -81,7 +84,7 @@ public class TransactionsService(
     public async Task<TransferGuidsResponse> AddTransferTransactionAsync(TransferRequest request)
     {
         var rates = await GetRatesAsync();
-        currencyRatesProvider.SetRates(rates);
+        await currencyRatesProvider.SetRates(rates);
 
         _logger.Information("Asynchronous transfer request verification.");
         var validationResult = await addTransferValidator.ValidateAsync(request);
@@ -179,6 +182,26 @@ public class TransactionsService(
 
     public Task SetRates(RatesInfo rates)
     {
+        var listOfRates = new List<CurrencyRateDto>();
+        foreach (var rate in rates.Rates)
+        {
+            var currencyCode = rate.Key[3..]; // Удаление первых трех символов
+            if (Enum.TryParse<Currency>(currencyCode, out var currency))
+            {
+                var newRate = new CurrencyRateDto()
+                {
+                    Currency = currency,
+                    Rate = rate.Value
+                };
+                listOfRates.Add(newRate);
+            }
+            else
+            {
+                // _logger.Warning($"Skipping rate for unknown currency code: {currencyCode}");
+            }
+        }
+
+        transactionsRepository.SetNewRates(listOfRates);
         _logger.Information("Setting rates.");
         currencyRatesProvider.SetRates(rates);
         return Task.CompletedTask;

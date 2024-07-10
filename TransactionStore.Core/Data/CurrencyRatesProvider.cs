@@ -46,12 +46,22 @@ public class CurrencyRatesProvider : ICurrencyRatesProvider
         throw new ArgumentException($"Rate for USD to {currency} not found.");
     }
 
-    public void SetRates(RatesInfo rates)
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
+    public async Task SetRates(RatesInfo rates)
     {
-        lock (_lockObject)
+        await _semaphore.WaitAsync();
+        try
         {
+            // Логгирование обновления курсов
             _logger.Information($"Currency rates updated at {DateTime.Now}.");
+        
+            // Обновление _rates
             _rates = rates.Rates;
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 }
