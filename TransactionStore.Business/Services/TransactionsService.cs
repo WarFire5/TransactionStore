@@ -15,7 +15,7 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
     IValidator<DepositWithdrawRequest> addDepositWithdrawValidator, IValidator<TransferRequest> addTransferValidator) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
-    private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+    private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1,1);
 
     public async Task<Guid> AddDepositWithdrawTransactionAsync(TransactionType transactionType, DepositWithdrawRequest request)
     {
@@ -223,6 +223,19 @@ public class TransactionsService(ITransactionsRepository transactionsRepository,
     }
 
     public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
+    {
+        await semaphoreSlim.WaitAsync();
+        try
+        {
+            return await ProcessGetBalanceByAccountIdAsync(id);
+        }
+        finally
+        {
+            semaphoreSlim.Release();
+        }
+    }
+
+    private async Task<AccountBalanceResponse> ProcessGetBalanceByAccountIdAsync(Guid id)
     {
         _logger.Information($"Getting a list of transactions for account with ID {id}.");
         List<TransactionDto> transactions = await transactionsRepository.GetTransactionsByAccountIdAsync(id);
